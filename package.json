@@ -1,0 +1,22 @@
+{
+  "name": "visual-production-mcp",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Provider-neutral audiovisual production orchestration through MCP",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node --check src/core.mjs && node --check src/server.mjs && node --check src/upstream.mjs && node --check src/media.mjs && node --check src/preflight.mjs",
+    "operator": "node src/cli.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.3.0",
+    "@modelcontextprotocol/client": "^2.3.0",
+    "zod": "^4.2.0"
+  }
+}

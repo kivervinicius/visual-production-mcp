@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "arquivo-amanha-ep01",
+  "title": "Arquivo Amanhã — Episódio 01",
+  "source": {
+    "repository": "https://github.com/kivervinicius/kiver.dev",
+    "ref": "main",
+    "path": "projects/arquivo-amanha/editorial/season-v3-candidate"
+  },
+  "assets": [],
+  "characters": [],
+  "shots": []
+}

@@ -1,0 +1,7 @@
+{
+  "flow-account-01": {
+    "command": "node",
+    "args": ["/absolute/path/to/existing-google-flow-mcp/dist/index.js"],
+    "env": {}
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "demo-production",
+  "title": "Demo production (fictional placeholder)",
+  "source": { "repository": "", "ref": "", "path": "" },
+  "assets": [],
+  "characters": [
+    {
+      "id": "demo-character",
+      "version": 1,
+      "description": "Replace with approved character bible",
+      "referenceAssetIds": []
+    }
+  ],
+  "shots": [
+    {
+      "id": "demo-s1-sh1",
+      "prompt": "A simple demonstration shot in a clean studio",
+      "aspectRatio": "9:16",
+      "durationSeconds": 6,
+      "characterIds": ["demo-character"],
+      "referenceAssetIds": [],
+      "estimatedCredits": 25
+    }
+  ]
+}
