@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — finalization planning and documentation
+
+- Added a concrete v1.0 delivery roadmap, product journey, target architecture, acceptance matrix, implementation runbook, contributing guide and documentation index.
+- Added a provider-neutral Visual Production Director Skill for agent-guided, source-grounded planning.
+- Added documentation link validation in CI (`npm run docs:check`), with a regression test.
+- No claims of live Google Flow generation or final video export were added.
+
 ## 0.4.0 — Story-first guided planning
 
 - Added `studio_story_start`, `studio_story_list`, `studio_story_status`, `studio_story_draft`, `studio_story_source`, `studio_story_submit_cast`, `studio_story_submit_storyboard` and `studio_story_prepare` MCP tools.

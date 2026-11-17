@@ -1,5 +1,9 @@
 # Agent operating contract (Codex, Antigravity and other MCP clients)
 
+## Roadmap de conclusão (obrigatório para novos agentes)
+
+Leia primeiro [docs/FINALIZATION_PLAN.md](docs/FINALIZATION_PLAN.md), [docs/TARGET_ARCHITECTURE.md](docs/TARGET_ARCHITECTURE.md), [docs/PRODUCT_JOURNEY.md](docs/PRODUCT_JOURNEY.md), [docs/ACCEPTANCE_MATRIX.md](docs/ACCEPTANCE_MATRIX.md) e [docs/IMPLEMENTATION_RUNBOOK.md](docs/IMPLEMENTATION_RUNBOOK.md). Para produção guiada, utilize a [Skill visual-production-director](skills/visual-production-director/SKILL.md), quando o cliente suportar Skills; caso contrário siga este arquivo. O núcleo MCP, não a Skill, persistirá o estado e decidirá a próxima etapa. **Não marque proposta de contrato como ferramenta já implementada.**
+
 ## When the user provides only a story
 
 **Do not require the user to learn JSON, prompts, shot lists, model names or accounts.** Guide them with these seven MCP tools in this order:
@@ -34,7 +38,7 @@ The human can ask to revise cast **before** storyboarding or storyboard **before
 - SDK MCP stdout is reserved for protocol traffic. Diagnostics go to stderr, never stdout.
 - Tests must cover every state transition and unknown result, with simulated MCPs; do not mark mocked generations as verified live functionality.
 - Maintain README.md and CHANGELOG.md when adding workflow stages and clarify status vs real provider integration.
-- Check `npm run check` and `npm test`; SDK integration requires separate npm install and CI checks.
+- Check `npm run check`, `npm run docs:check` and `npm test`; SDK integration requires separate npm install and CI checks.
 - Never claim media production succeeded without a verified provider operation and inspected original asset.
 
 ## Helpful pointers
