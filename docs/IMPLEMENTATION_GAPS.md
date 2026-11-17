@@ -1,3 +1,33 @@
+# Priorities after v0.4: story-first production is local, provider generation is not
+
+## Full end-to-end audit (2026-11-17)
+
+| Stage | Implementation | Missing acceptance evidence |
+| --- | --- | --- |
+| Narrative intake and immutable version | Done (MCP + CLI; SHA-256) | OCR/PDF/DOCX ingestion and direct cloud document integration |
+| Cast and environmental visual bible | Done as agent-assisted, source-anchored plan | Visual media creation in Flow and verified reference reuse |
+| Scene segmentation / shot board | Done as agent-assisted, editor-approved plan | Automated semantic quality grading and narration/timing alignment |
+| Character / environment reference images | DAG planned per account | Authentic image-generation adapter, image receipt, thumbnails, editorial comparison |
+| Shot still images | DAG planned per account with reference dependencies | Verify image+reference support in actual installed Flow tools; preflight refuses dropped inputs |
+| Video from start frame | DAG planned per account | Authenticated frame-to-video run, asset correlation, download, cost quote |
+| SceneBuilder composition | Optional DAG operation | Adapter support and reliable exported clips |
+| Audio, subtitles, edit and final MP4 | Edit manifest only | Audio pipeline, caption alignment, FFmpeg assembly, approved continuity report |
+| Cross-account reuse | Canonical identity, hashes and local bindings | Authorized multi-account transfer and actual incremental provider hydration, subject to terms |
+
+**The repository is not yet a zero-touch video generator.** A single approved user narrative can now produce a tested local plan. It cannot independently render and deliver a finished video without a working provider bridge.
+
+## Next engineering tasks (recommended order)
+
+1. Connect one approved Google Flow upstream, probe tools/schema/auth/project and actual model capabilities; confirm one image from a character brief.
+2. Upload/reuse a reference in the same account and generate one shot image with the exact references intact.
+3. Generate one paid video from that verified image, correlate job->asset and ingest original media with SHA-256/FFprobe.
+4. Editorial review gate and first reproducible local MP4 export from verified files.
+5. Persist explicit per-account live quotes, lease/resume crash recovery, provider-side health and circuit breakers.
+6. Incremental canonical reference hydration in a second account only if permitted by the provider; never reuse native IDs.
+7. Progressively homologate Flow's advanced editing, SceneBuilder, Agent, Tools, avatars and voices; then Higgsfield.
+
+---
+
 # Beyond v0.3: Flow parity without a brittle browser robot
 
 ## Evidence-based prioritization

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.0 — Story-first guided planning
+
+- Added `studio_story_start`, `studio_story_list`, `studio_story_status`, `studio_story_draft`, `studio_story_source`, `studio_story_submit_cast`, `studio_story_submit_storyboard` and `studio_story_prepare` MCP tools.
+- Added durable source snapshot and SHA-256, literal excerpt provenance checks, cast/scene/shot schema checks, progress guide, source coverage warning and explicit operator-only editorial approval.
+- Compiles a canonical production, immutable Flow DAG, character/location reference plans, frame-to-video shot dependencies, storyboard, character bible, runbook and edit order; **no remote generation implied**.
+- Rejects adapter mappings that silently discard source frames, reference images, aspect ratio, duration or other supplied creative input.
+- Introduces resumable drafts for multiple agents, complete Portuguese README, canonical examples, and tests for the new guided stages.
+- CI now includes an actual MCP stdio handshake smoke test with the SDK; this verifies tool registration but not provider connectivity.
+- Known gaps remain: real authenticated Flow adapter, automatic remote asset synchronization, result recovery/ingestion for workflows, final FFmpeg assembly and npm SDK handshake verification.
+
+
 ## 0.3.0 — Flow workflow foundation
 
 - Added 23 documented Google Flow operations in an explicit, non-live capability catalog.

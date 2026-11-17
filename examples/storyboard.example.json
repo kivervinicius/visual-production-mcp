@@ -1,0 +1,46 @@
+{
+  "scenes": [
+    {
+      "id": "entrada",
+      "title": "A oficina parada",
+      "sourceExcerpt": "Lia abre a porta da oficina. O relógio está parado. Ela vê a cidade submersa pela janela.",
+      "locationId": "oficina",
+      "shots": [
+        {
+          "id": "abertura",
+          "sourceExcerpt": "Lia abre a porta da oficina.",
+          "visualPrompt": "Close cinematográfico da porta da oficina, Lia em silhueta, estilo 2D aprovado.",
+          "motionPrompt": "A porta se abre lentamente; movimentos contidos, sem personagens extras.",
+          "durationSeconds": 6,
+          "characterIds": ["lia"],
+          "camera": "Dolly-in discreto, câmera baixa."
+        },
+        {
+          "id": "relogio",
+          "sourceExcerpt": "O relógio está parado.",
+          "visualPrompt": "Relógio analógico parado, luz lateral na parede.",
+          "motionPrompt": "Pequena aproximação de câmera; ponteiros absolutamente estáticos.",
+          "durationSeconds": 4,
+          "characterIds": []
+        }
+      ]
+    },
+    {
+      "id": "saida",
+      "title": "A lanterna",
+      "sourceExcerpt": "Lia acende uma lanterna e sai em silêncio.",
+      "locationId": "oficina",
+      "shots": [
+        {
+          "id": "lanterna",
+          "sourceExcerpt": "Lia acende uma lanterna e sai em silêncio.",
+          "visualPrompt": "Lia em primeiro plano, lanterna, profundidade da oficina mantendo identidade.",
+          "motionPrompt": "O feixe da lanterna acende e Lia sai sem falar.",
+          "durationSeconds": 8,
+          "characterIds": ["lia"],
+          "audio": "Silêncio; não inventar diálogo."
+        }
+      ]
+    }
+  ]
+}

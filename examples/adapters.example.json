@@ -1,24 +1,39 @@
 {
   "google-flow": {
-    "video.text": {
-      "tool": "flow_generate_video",
+    "image.generate": {
+      "tool": "REPLACE_WITH_REAL_IMAGE_TOOL",
       "arguments": {
         "prompt": { "from": "input.prompt" },
         "aspectRatio": { "from": "input.aspectRatio" },
-        "model": { "from": "input.model" },
-        "accountId": { "from": "account.id" },
+        "referenceImages": { "from": "input.referenceImages" },
         "confirmCreditSpend": { "literal": true }
       },
-      "resultIdPaths": ["jobId", "job_id", "operationId", "data.jobId"],
+      "resultIdPaths": ["jobId", "operationId", "data.jobId"],
       "statusPaths": ["status", "state", "data.status"]
     },
-    "image.generate": {
-      "tool": "flow_generate_image",
+    "video.frames": {
+      "tool": "REPLACE_WITH_REAL_FRAMES_TOOL",
       "arguments": {
         "prompt": { "from": "input.prompt" },
+        "startFrame": { "from": "input.startFrame" },
         "aspectRatio": { "from": "input.aspectRatio" },
-        "accountId": { "from": "account.id" },
+        "durationSeconds": { "from": "input.durationSeconds" },
         "confirmCreditSpend": { "literal": true }
+      },
+      "resultIdPaths": ["jobId", "operationId", "data.jobId"],
+      "statusPaths": ["status", "state", "data.status"]
+    },
+    "character.create": {
+      "tool": "REPLACE_WITH_REAL_CHARACTER_TOOL",
+      "arguments": {
+        "characterId": { "from": "input.characterId" },
+        "source": { "from": "input.source" }
+      }
+    },
+    "scene.compose": {
+      "tool": "REPLACE_WITH_REAL_SCENE_TOOL",
+      "arguments": {
+        "clips": { "from": "input.clips" }
       }
     }
   }

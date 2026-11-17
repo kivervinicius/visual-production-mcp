@@ -1,0 +1,23 @@
+{
+  "visualStyle": "Animação 2D original, grafite monocromático, contrastes fortes, silhuetas consistentes, vertical 9:16, sem fotorrealismo.",
+  "characters": [
+    {
+      "id": "lia",
+      "name": "Lia",
+      "sourceExcerpt": "Lia abre a porta da oficina.",
+      "designPrompt": "Pessoa adulta de silhueta simples e reconhecível; cabelo curto escuro e casaco funcional, aparência consistente entre cenas.",
+      "libraryId": "a-oficina-parada/lia"
+    }
+  ],
+  "locations": [
+    {
+      "id": "oficina",
+      "name": "Oficina",
+      "sourceExcerpt": "a porta da oficina",
+      "designPrompt": "Oficina pequena com relógio analógico parado e janela voltada à cidade submersa; preservar geometria entre planos."
+    }
+  ],
+  "assumptions": [
+    "A história não define cabelo ou vestuário de Lia; a aparência acima é uma proposta criativa que precisa de aprovação humana."
+  ]
+}
