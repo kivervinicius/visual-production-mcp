@@ -2,114 +2,358 @@
 
 [![CI](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml)
 
-**v0.3.0 — experimental, local-first production coordinator.** Not a working end-to-end Google Flow / Higgsfield video generator yet.
+**v0.4.0 (experimental) · MCP para transformar histórias em planos de produção audiovisual · Local-first · Google Flow como primeiro adaptador**
 
-A provider-neutral Model Context Protocol (MCP) server to help coding agents such as Codex and Antigravity plan audiovisual productions, share **immutable character identities** across episodes, track account-local projects, allocate independent per-account budgets and preserve downloaded results.
+> **Comece com uma história, não com um JSON.** O usuário conta sua história ou fornece um arquivo `.md`/`.txt`; seu agente de IA (Codex, Antigravity ou outro cliente MCP) conduz a preparação passo a passo. O MCP preserva a fonte, valida a rastreabilidade do material proposto, organiza personagens/cenários/cenas e compila prompts e tarefas para produzir imagens e vídeos no provedor conectado.
+>
+> **Limite importante:** hoje o percurso **história → bíblia visual → storyboard → manifestos/workflow** funciona localmente e é testado. O percurso **workflow → geração real no Google Flow → download → edição final** ainda precisa de um adaptador autenticado e homologado. Não confunda *plano de produção* com *mídia gerada*.
 
-**Important:** A canonical production in this repository is **not** a Google Flow project. Provider-local projects must be created, populated and verified separately. This project does not transfer Google credits between accounts, bypass provider restrictions or make private APIs official.
+## 1. O que é — e o que o usuário precisa fornecer
 
-## New in v0.3: Google Flow workflows
+A experiência pretendida é: **“Aqui está minha história. Ajude-me a transformá-la em um vídeo completo.”** Não é necessário começar sabendo programar, listar cenas, escolher um modelo Veo ou preencher um manifesto.
 
-- A canonical **23-operation Flow catalog**, covering image, video, frame-to-video, ingredients, video edit/extend, scenes, characters, asset organization, Flow Agent and custom Flow Tools. This is a **documented-product catalog, not verified live automation**.
-- Immutable DAG workflows (`studio_workflow_import`) with dependency checks, account-scoped references, explicit spend estimates and recovery-safe states. Plan/inspect/execute steps independently.
-- Operator-owned adapter mappings that bind operation-specific inputs to **discovered real upstream MCP tools**. A schema preflight runs before any dispatch attempt.
-- Workflow execution is one-shot, human-approved and fail-closed. A returned `jobId` **without evidence of actual submission** does not count as successful paid generation.
-- Cross-account native media IDs are rejected; the transfer path is canonical download/import/rebind, not ID reuse.
-- 27 local automated tests. Provider login, actual Flow generation and end-to-end video delivery **not yet validated**.
+O agente conduz a conversa criativa; o MCP é a camada persistente e determinística. Ele não possui um LLM embutido e **não interpreta histórias sozinho** quando chamado diretamente por um script. A transformação do texto em decisões criativas é feita pelo agente conectado, com revisão humana.
 
-See [Flow workflow contract](docs/FLOW_WORKFLOWS.md), [example workflow](examples/workflow.flow.example.json) and [example adapter](examples/adapters.example.json).
+```text
+HISTÓRIA (texto / .txt / .md)
+    │  preservar original + SHA-256
+    ▼
+1. ANÁLISE NARRATIVA          ← IA identifica; MCP exige citações literais
+    │ elenco / locais / hipóteses criativas
+    ▼
+2. BÍBLIA VISUAL             ← estilo e aparência consistentes
+    │ revisável antes de montar o storyboard
+    ▼
+3. STORYBOARD                ← cenas ordenadas, planos, duração e movimento
+    │ revisão/ aprovação editorial explícita
+    ▼
+4. PACOTE LOCAL              ← production.json / workflow.json / guias
+    │ cada etapa vinculada ao roteiro e à conta destino
+    ▼
+5. GOOGLE FLOW [ADAPTADOR]   ← imagens de personagens e cenários
+    │ → frames das cenas → vídeos → composição opcional
+    ▼
+6. REVISÃO / ENTREGA         ← downloads, consistência e edição final
+       (integração e montagem automatizadas ainda pendentes)
+```
 
-## What works now
+A pessoa permanece dona do roteiro e pode reutilizar a bíblia visual em novos episódios. Os projetos e IDs nativos de cada conta Google são **separados**; não há transferência de créditos nem clonagem mágica entre contas.
 
-- Local `production.json` import/export with path validation and SHA-256-addressed reference files.
-- Versioned cross-project character registry using an explicit `libraryId` (e.g. `arquivo-amanha/vesper`) and immutable `version` / reference hashes; projects without `libraryId` are scoped by project ID.
-- Account-specific native project, asset and character bindings. `studio_sync_plan` reports missing dependencies. Bindings are operator-reported until an adapter verifies them.
-- Independent, operator-entered credit estimates. Job planning is idempotent, and paid dispatch requires explicit local operator approval. No automatic account rotation or retries after ambiguous submissions.
-- Read-only `studio_preflight`: missing references, local upstream configuration and optionally discovered MCP tool names; it does **not** verify login or live balance.
-- `studio_ingest_result`: requires a submitted provider operation ID, copies an existing local file into content-addressed storage, validates image signature or uses FFprobe to inspect video, records the hash and sets **editorial review to pending**.
-- Local-only operator CLI for reconciliation of uncertain submissions and editorial approval/rejection.
-- MCP v2 stdio host with upstream MCP discovery and a restrictive allowlisted dispatch bridge.
-- 27 Node built-in tests (local core and simulated MCP adapter); provider/browser end-to-end tests remain outstanding.
+## 2. Estado real das funcionalidades
 
-## Install
+| Etapa | Estado na v0.4.0 | O que acontece de fato |
+| --- | --- | --- |
+| Receber história colada ou arquivo UTF-8 | **Implementado** | Salva snapshot local imutável com SHA-256 |
+| Guiar análise de personagens e cenários | **Implementado com agente** | Ferramentas, validação de trechos e checkpoint; interpretação por LLM externo |
+| Definir estilo, identidade, cenários e hipóteses | **Implementado com agente** | Bíblia proposta e audível antes da aprovação |
+| Dividir roteiro em cenas e planos | **Implementado com agente** | Checa IDs, relações, citações da história e cobertura aproximada |
+| Gerar `production.json`, `workflow.json`, storyboard e bíblia | **Implementado** | Compila arquivos determinísticos sem gastar créditos |
+| Planejar referências → imagens → vídeos | **Implementado** | DAG com dependências e IDs limitados a uma conta |
+| Descobrir schema de MCP upstream | **Implementado, se houver MCP configurado** | Testa disponibilidade da ferramenta e parâmetros, não login real |
+| Criar personagens, imagens ou vídeos no Flow | **Não homologado** | Requer adaptador real, autenticação, ferramentas existentes e aprovação |
+| Sincronizar referências entre contas | **Planejamento apenas** | Binding local; upload e hash remotos ainda não verificados |
+| Download e revisão de clipes gerados por workflow | **Manual/parcial** | Há ingestão verificada para jobs legados; não está integrado automaticamente à DAG |
+| Renderizar episódio final (FFmpeg/áudio/legenda) | **Pendente** | Exporta ordem de montagem, não MP4 final |
+| Higgsfield | **Arquitetura prevista** | Ainda não existe adaptador end-to-end verificado |
 
-Requires Node.js 20+, `npm` and FFprobe for importing videos.
+O catálogo em `src/flow-operations.mjs` descreve **23 tipos de operações do produto Flow**; não significa que tenhamos 23 ações de navegador implementadas. Consulte [pendências](docs/IMPLEMENTATION_GAPS.md).
+
+## 3. Instalação para desenvolvedores e agentes
+
+### Requisitos
+
+- Node.js **20 ou superior** (CI usa Node 22), npm e um cliente que aceite MCP stdio.
+- Acesso ao repositório: [kivervinicius/visual-production-mcp](https://github.com/kivervinicius/visual-production-mcp).
+- Para planejar roteiros **não é necessário** ter conta no Flow nem instalar FFmpeg.
+- Para usar o Flow de verdade, instale um MCP de Flow compatível, autentique a sessão manualmente no navegador e valide as condições do provedor.
+- FFprobe/FFmpeg só são necessários para inspeção técnica de vídeos e pós-produção futura.
 
 ```bash
+# Para testar a branch de desenvolvimento:
+git clone -b feat/story-first-guided-production \
+  https://github.com/kivervinicius/visual-production-mcp.git
+cd visual-production-mcp
 npm install
 npm run check
 npm test
-cp examples/upstreams.example.json .studio/upstreams.json  # create .studio first
-```
 
-Correct first-time setup:
-
-```bash
 mkdir -p .studio
 cp examples/upstreams.example.json .studio/upstreams.json
+cp examples/adapters.example.json .studio/adapters.json
 ```
 
-In Codex, register the server with the absolute path after installing packages:
+> Se a branch já tiver sido integrada à `main`, faça um clone normal. **Não cole IDs, senhas, cookies nem tokens Google** nos arquivos JSON versionados.
+
+### Executar como MCP no Codex
+
+Use caminhos absolutos. Defina `STUDIO_HOME` de preferência para evitar que o mesmo servidor crie estados diferentes dependendo do diretório de execução do agente.
 
 ```bash
-codex mcp add visual-production -- node /absolute/path/to/visual-production-mcp/src/server.mjs
+codex mcp add visual-production \
+  --env STUDIO_HOME=/caminho/visual-production-mcp/.studio \
+  -- node /caminho/visual-production-mcp/src/server.mjs
 ```
 
-Antigravity and other MCP hosts should use `command=node`, `args=[absolute path to src/server.mjs]`, and optionally `STUDIO_HOME=/absolute/workspace/.studio`. Avoid running several simultaneous **provider browser sessions** against the same Chrome profile. No Google credentials or cookies should be placed in source control.
+Para Antigravity, Cursor ou outro host MCP stdio, configure a mesma invocação:
 
-## Workflow
+```json
+{
+  "mcpServers": {
+    "visual-production": {
+      "command": "node",
+      "args": ["/caminho/visual-production-mcp/src/server.mjs"],
+      "env": { "STUDIO_HOME": "/caminho/visual-production-mcp/.studio" }
+    }
+  }
+}
+```
 
-1. Build a versioned production manifest from editorial source files (do not invent story details). `studio_import_project` registers the local production.
-2. `studio_register_account` for each separately authorized provider session, setting `creditEstimate` from that account (not a global pool).
-3. `studio_plan` creates a persistent set of independent shot jobs, defaulting to `awaiting_approval`.
-4. For each assigned shot, `studio_sync_plan` describes missing resources on that account. Create them through a verified provider integration and `studio_bind_project` with native IDs.
-5. `studio_preflight` checks local prerequisites. A human checks the real provider login, project, available options, expected credit quote and terms.
-6. Human approves expenditure: `npm run operator -- approve <jobId>`. Dispatch via `studio_dispatch_job` only if upstream tool name/inputs can be verified. Upstream output is not assumed successful just because it returned text.
-7. If a submission was ambiguous, inspect Flow **manually** and run `npm run operator -- reconcile <jobId> <externalJobId>` only after validating the operation. **Do not submit again automatically.**
-8. Download the generated file through the provider's supported interface, then `studio_ingest_result` with that local path. Only an existing provider job with a known operation ID can be completed.
-9. After inspecting story, continuity and visual quality, human runs `npm run operator -- review <jobId> approved|rejected [note]`.
-10. `studio_bundle` exports the original canonical manifest and reference bytes; this does not clone a native Flow project.
+O formato externo de configuração depende da versão do cliente MCP. Inspecione suas configurações reais antes de sobrescrevê-las. Arquivos em `.studio/` são locais e ignorados pelo Git.
 
-## MCP tools (21)
+## 4. Início rápido: somente uma história
 
-| Tool | Purpose |
+Copie a história abaixo para `minha-historia.md`, **ou cole a sua história diretamente na conversa com o agente**.
+
+```text
+Lia abre a porta da oficina. O relógio está parado. Ela vê a cidade submersa pela janela.
+
+Lia acende uma lanterna e sai em silêncio.
+```
+
+Um exemplo pronto está em [`examples/story.example.md`](examples/story.example.md). No Codex/Antigravity, peça:
+
+> **Transforme esta história em uma produção audiovisual vertical 9:16 usando Visual Production MCP.** Leia o texto integral, preserve o roteiro, proponha elenco/cenários e estilo, declare qualquer hipótese visual, monte um storyboard plano a plano, mostre o resultado para revisão e prepare os arquivos. Não consuma créditos nem produza vídeos antes da minha aprovação. Use os instrumentos `studio_story_*`; não crie dados nem IDs de mídia do Flow fictícios.
+
+O agente deve seguir este roteiro de ferramentas:
+
+### Passo 1 — Registrar a fonte
+
+`studio_story_start` recebe `{ "id": "oficina-ep01", "title": "A Oficina", "storyText": "...", "aspectRatio": "9:16" }`, ou substitua `storyText` por `storyPath` para um arquivo já existente na máquina do MCP.
+
+O servidor preserva o texto sob `.studio/stories/oficina-ep01/source.md`, calcula SHA-256 e retorna uma **próxima ação**. Para histórias grandes, `studio_story_source` disponibiliza blocos de até 12.000 caracteres, com `offset` e `hasMore`; o agente precisa ler **todos** os blocos antes de fazer o plano.
+
+O mesmo ID com história diferente é recusado. Para novas versões do roteiro, utilize outro ID; nunca reescreva silenciosamente o que já foi aprovado.
+
+### Passo 2 — Propor o elenco, os locais e a identidade visual
+
+O agente lê a fonte e envia `studio_story_submit_cast` com `visualStyle`, `characters`, `locations` e `assumptions`. Veja o contrato completo em [`examples/cast.example.json`](examples/cast.example.json).
+
+Cada personagem/local possui `sourceExcerpt`: **trecho literal que aparece no roteiro**. O sistema rejeita entradas sem evidência textual. A aparência (roupa, cabelo, paleta) que não estiver descrita no roteiro pode ser sugerida, **mas deve constar entre as hipóteses** e depende de revisão humana.
+
+Os personagens recebem identidade global opcional `libraryId` e versão imutável. Isso permite reaproveitar a mesma identidade visual em episódios futuros, sem reescrever a descrição a cada geração. O MCP não cria automaticamente uma foto de personagem nesta etapa.
+
+### Passo 3 — Montar o storyboard
+
+`studio_story_submit_storyboard` recebe cenas e planos ordenados; exemplo em [`examples/storyboard.example.json`](examples/storyboard.example.json).
+
+Cada plano contém:
+
+| Campo | Propósito |
 | --- | --- |
-| `studio_status` | Account/project/job state |
-| `studio_library` | Versioned character catalog |
-| `studio_import_project` | Canonical manifest import |
-| `studio_register_account` | Logical authorized account |
-| `studio_update_balance` | Operator-entered balance estimate |
-| `studio_bind_project` | Provider-specific native bindings |
-| `studio_sync_plan` | Find missing remote characters and references |
-| `studio_plan` | Idempotent shot assignment |
-| `studio_preflight` | Read-only compatibility check |
-| `studio_discover_upstream` | List real available upstream tool schemas |
-| `studio_dispatch_job` | Guarded one-shot generation dispatch |
-| `studio_record_failure` | Record provider failures/unknown submissions |
-| `studio_ingest_result` | Hash and validate an existing media file |
-| `studio_bundle` | Export a portable source package |
+| `sourceExcerpt` | Trecho exato da história que justifica a ação |
+| `visualPrompt` | Composição do quadro/imagem base |
+| `motionPrompt` | Ação e movimento para o vídeo |
+| `durationSeconds` | Duração pretendida (a disponibilidade real varia por modelo) |
+| `characterIds` | Personagens do elenco autorizado que aparecem |
+| `camera` / `audio` | Direção complementar, opcional |
 
-### Workflow-specific tools
+O MCP valida IDs, personagens, localização, duplicação de planos, citações textuais e ordenação. Informa uma **cobertura aproximada do texto** pelas cenas; cobertura baixa é alerta para revisão, não sinal de que o LLM pode inventar material para preencher lacunas.
 
-`studio_flow_capabilities`, `studio_workflow_import`, `studio_workflow_list`, `studio_workflow_status`, `studio_workflow_plan`, `studio_workflow_inspect_step`, `studio_workflow_execute_step`.
+Para retomar a produção em outro cliente, `studio_story_draft` recupera o elenco e o storyboard persistidos, sem depender do histórico da conversa.
 
-**Human-only operations are intentionally not exposed via MCP**: approve credit spend, reconcile ambiguous submissions and approve editorial quality. An agent's self-declared `operatorConfirmed=true` is not sufficient authorization.
+Antes da aprovação, o agente deve mostrar quais personagens e ambientes serão produzidos, quantos planos existem, a ordem das cenas e quais escolhas criativas foram acrescentadas.
 
-## Source layout
+### Passo 4 — Aprovar a direção editorial
 
-- `src/core.mjs`: production manifests, character catalog, account bindings, planning and job state.
-- `src/upstream.mjs`: local MCP subprocess and guarded generation dispatch.
-- `src/preflight.mjs`: read-only diagnostics; never requests paid generation.
-- `src/media.mjs`: immutable result ingestion and manual editorial review.
-- `src/server.mjs`: MCP tools; `src/cli.mjs`: local operator-only actions.
-- `docs/BACKLOG.md`: audited blockers and prioritized milestones.
-- `docs/ADAPTER_CONTRACT.md`: expected Google Flow / Higgsfield adapter boundary.
-- `docs/REFERENCES.md`: external projects used as references; no third-party code copied.
+A aprovação é **local e explícita**, no terminal do operador:
 
-## Limitations and policy
+```bash
+npm run operator -- story-status oficina-ep01
+npm run operator -- story-approve oficina-ep01
+```
 
-The server does not yet independently (a) create projects and upload reference characters into Google Flow, (b) clone projects between accounts, (c) verify live credit balances, (d) download Flow media, (e) generate videos through an authenticated account, or (f) assemble final episodes with FFmpeg. Real integration must be validated separately in each provider's permitted workflows.
+Não exponha a aprovação editorial como ferramenta autônoma do MCP. Depois de aprovar, a bíblia e o storyboard são congelados para a compilação; alterações significativas precisam de uma nova versão da história.
 
-Accounts remain separate. Do not automate signups, rotate accounts to evade rate limits, bypass CAPTCHAs, remove provenance marks, or call undocumented private endpoints. Your own account access does not guarantee that multi-account automation is permitted under provider terms.
+### Passo 5 — Escolher a conta de destino e preparar tudo
 
-License: MIT, original source only. State and media under `.studio/` are excluded from Git.
+Primeiro, o usuário cadastra uma sessão Google Flow que já autorizou, usando `studio_register_account`. Isso é apenas um registro **lógico** do perfil, não login automático; informe orçamento estimado conscientemente. Por exemplo:
+
+```json
+{
+  "id": "google-01",
+  "provider": "google-flow",
+  "label": "Flow — projeto pessoal",
+  "authorized": true,
+  "creditEstimate": 100,
+  "upstreamId": "flow-account-01"
+}
+```
+
+Em seguida, `studio_story_prepare` recebe:
+
+```json
+{
+  "storyId": "oficina-ep01",
+  "accountId": "google-01",
+  "videoEstimatedCredits": 25,
+  "imageEstimatedCredits": 0,
+  "includeCharacterCreation": false,
+  "includeSceneCompose": false
+}
+```
+
+Os valores de créditos são **estimativas fornecidas pelo operador**; `imageEstimatedCredits: 0` não implica imagens ilimitadas ou gratuitas. Confirme no Flow as quotas e o custo exato da operação antes de aprová-la. `includeCharacterCreation`/`includeSceneCompose` são opcionais, pois nem todo upstream tem essas operações automatizadas.
+
+O comando **não gera imagens ou vídeos**. Ele gera os arquivos necessários e os registra no banco local. A escolha de modelo, duração e formatos precisa ser verificada no Flow no momento da execução, sem substituições silenciosas.
+
+### Passo 6 — O pacote que fica pronto
+
+```text
+.studio/stories/oficina-ep01/
+├── source.md                    # história original / hash verificado
+└── production/
+    ├── CHARACTER_BIBLE.md       # estilo, personagens, cenários, evidências
+    ├── STORYBOARD.md            # cenas, planos, câmera, movimento, áudio
+    ├── production.json          # material canônico + personagens + shots
+    ├── workflow.json            # DAG de imagens, frames e vídeos por conta
+    ├── EDIT_MANIFEST.json       # ordem prevista para edição
+    └── RUNBOOK.md               # roteiro operacional e limitações
+```
+
+Por exemplo, o workflow compila as dependências abaixo:
+
+```text
+character-image-lia   location-image-oficina
+         \                 /
+          \               /
+           frame-abertura
+                │
+           video-abertura
+                │
+          scene-entrada (opcional)
+```
+
+O plano exige que a imagem do personagem seja produzida e identificada **antes** de gerar a imagem da cena; a imagem da cena é usada como quadro inicial do vídeo. IDs nativos pertencem à conta de destino e não podem ser reutilizados em outra. O sistema agora recusa adaptadores que descartem um `startFrame`, `referenceImages`, `aspectRatio` ou outro campo criativo sem avisar.
+
+### Passo 7 — Executar no Flow (integração ainda a homologar)
+
+O operador configura `.studio/upstreams.json` (processo MCP existente) e `.studio/adapters.json` (correspondência de cada operação com a ferramenta **real** anunciada pelo upstream). O exemplo de adapters tem placeholders deliberados; **não é um adaptador funcional pronto**.
+
+O agente usa:
+
+1. `studio_workflow_plan` — verificar pré-requisitos e dependências;
+2. `studio_workflow_inspect_step` — verificar ferramenta MCP, schema e referências;
+3. `npm run operator -- workflow-approve <workflowId> <stepId>` — aprovação local da etapa;
+4. `studio_workflow_execute_step` — tentativa única de execução aprovada;
+5. conferir no Flow o ID de operação e o asset realmente produzido;
+6. `npm run operator -- workflow-reconcile ...` / `workflow-complete ...` somente após verificação externa.
+
+**A aprovação editorial do passo 4 não equivale a autorizar gastos no passo 7.** Erros de rede, submissões sem ID confiável ou formulários apenas preparados resultam em estado `submission_unknown`, que bloqueia reenvios automáticos. O servidor não contorna CAPTCHA, limites de contas ou regras de serviço.
+
+### Passo 8 — Revisar e finalizar
+
+O workflow preserva a ordem das cenas no `EDIT_MANIFEST.json`, mas **não faz a montagem final de MP4** nesta versão. O processo ainda deve baixar os originais, conferir personagem a personagem, identificar cortes ruins e montar trilha, áudio, legendas e créditos num pipeline de pós-produção. Não se deve declarar um episódio entregue por ter somente job IDs do Flow.
+
+## 5. Personagens reutilizáveis e múltiplas contas
+
+- **Biblioteca canônica**: `libraryId@version`, descrição e hashes de referências ficam no workspace, independentes do fornecedor.
+- **Projeto por conta**: uma conta do Flow mantém os seus próprios projetos, referências e IDs; o mesmo asset local precisa de vínculo específico no destino.
+- **Sem pooling**: créditos não são somados nem transferidos. Estimativas, limites e autorizações são individuais.
+- **Sem rotação evasiva**: este projeto não automatiza mudança de conta para contornar limites, bloqueios ou condições do Flow.
+- **Paralelismo futuro**: a distribuição explícita de cenas entre contas autorizadas pode ser adicionada depois de validar sincronização de mídia real e os termos aplicáveis. Uma montagem que cruza contas deve usar arquivos exportados, não IDs de outra sessão.
+
+`studio_sync_plan` informa o que precisa ser sincronizado para um *shot*; `studio_bind_project` registra os IDs que o operador verificou. Essas rotinas ainda **não comprovam** que upload/sincronização remota aconteceu.
+
+## 6. Ferramentas MCP
+
+### Assistente de história (novas na v0.4)
+
+| Ferramenta | Para que serve | Consome créditos? |
+| --- | --- | --- |
+| `studio_story_start` | Recebe texto ou arquivo e preserva a história | Não |
+| `studio_story_list` | Lista histórias e etapas | Não |
+| `studio_story_status` | Mostra checklist/etapa e próxima ação | Não |
+| `studio_story_draft` | Recupera elenco e storyboard para revisão ou troca de agente | Não |
+| `studio_story_source` | Lê história por blocos com integridade | Não |
+| `studio_story_submit_cast` | Registra elenco, cenários, estilo e hipóteses | Não |
+| `studio_story_submit_storyboard` | Registra cenas e planos com rastreabilidade | Não |
+| `studio_story_prepare` | Compila o pacote e o DAG de produção | Não |
+
+### Produção existente (v0.2/v0.3)
+
+- Projeto e conta: `studio_library`, `studio_status`, `studio_import_project`, `studio_register_account`, `studio_update_balance`, `studio_bind_project`, `studio_sync_plan`, `studio_plan`, `studio_bundle`.
+- Verificação e mídia: `studio_preflight`, `studio_discover_upstream`, `studio_dispatch_job`, `studio_record_failure`, `studio_ingest_result`.
+- Fluxo Google Flow: `studio_flow_capabilities`, `studio_workflow_import`, `studio_workflow_list`, `studio_workflow_status`, `studio_workflow_plan`, `studio_workflow_inspect_step`, `studio_workflow_execute_step`.
+
+As ferramentas `studio_story_*` **não aprovam** sua própria qualidade nem gastos. A CLI local permite as operações de confiança separadas: `story-approve`, `workflow-approve`, `workflow-reconcile`, `workflow-complete`, `review`, etc. Use `npm run operator --` sem argumentos para ver os comandos.
+
+## 7. Organização do código
+
+```text
+src/
+  story-guide.mjs        Recebimento de história, stages, validação editorial, compilação
+  core.mjs               Repositório canônico, personagens versionados, sessões e jobs
+  workflows.mjs          DAG imutável, status, dependências, orçamento e aprovação
+  workflow-adapter.mjs   Mapeamento de argumentos, preflight e execução fail-closed
+  flow-operations.mjs    Catálogo de 23 operações documentadas (não garantia de suporte)
+  upstream.mjs           Cliente MCP stdio para o provedor já instalado
+  media.mjs              Ingestão e hash de resultados dos jobs legados
+  preflight.mjs          Diagnóstico local, sem usar créditos
+  server.mjs             Registro das ferramentas MCP
+  cli.mjs                Aprovação, conciliação e revisão apenas pelo operador
+examples/                História, cast, storyboard, templates e adapters de exemplo
+tests/                   Testes locais (sem geração real no Flow)
+docs/                    Arquitetura, backlog, riscos e contratos
+```
+
+**Persistência atual:** `.studio/state.json` protegido por lock de filesystem. Escalar para muitos workers simultâneos requer SQLite/WAL, versionamento de schema, backups, leases e recuperação após crash. Não use diretórios `.studio/` em discos compartilhados sem avaliar garantias de locking.
+
+## 8. Testes e diagnóstico
+
+```bash
+npm run check
+npm test
+npm run operator -- story-start oficina-ep01 'A Oficina' examples/story.example.md
+npm run operator -- story-status oficina-ep01
+```
+
+> Este exemplo usa o arquivo de história; a análise de elenco e storyboard é realizada pelo agente MCP, não pelo comando CLI. Os arquivos de `cast` e `storyboard` em `examples/` servem como contratos e referência para os argumentos das ferramentas.
+
+Problemas típicos:
+
+- **“Missing remote project binding”**: associe um projeto real na conta correta; nunca invente o ID.
+- **“Adapter drops required creative input”**: ajuste o mapping para que o upstream receba a referência/duração/modelo ou escolha outra operação após nova aprovação.
+- **“submission_unknown”**: não repita. Consulte histórico/IDs do Flow e reconcilie com evidência.
+- **“sourceExcerpt is not an exact quotation”**: recopie o trecho literalmente do `studio_story_source`.
+- **“Storyboard already approved”**: crie um novo ID/versionamento, não modifique silenciosamente a fonte aprovada.
+- **“No authorized account”**: cadastre uma sessão lógica com `studio_register_account`; isso não garante login no Flow.
+- **“Module not found @modelcontextprotocol/…”**: rode `npm install` num ambiente com acesso ao registro npm e verifique a compatibilidade do SDK.
+- **“Flow UI changed / unsupported model”**: desabilite essa operação até que o adaptador seja atualizado e homologado.
+
+## 9. Roadmap e contribuições
+
+| Prioridade | Próximo marco | Evidência mínima para chamar de pronto |
+| --- | --- | --- |
+| P0 | Assistente guiado de história | **Implementado localmente**; contrato dos passos testado |
+| P0 | Conta Flow autenticada + operação real | Imagem e vídeo efetivamente criados, IDs corretos, créditos conferidos |
+| P0 | Upload incremental de referências | Hash canônico vinculado a mídia remota correta e reutilização comprovada |
+| P1 | Recuperação/download de mídia | Reanexar job sem duplicar gasto, FFprobe/sha256, testes de falha |
+| P1 | Revisão e montagem final | Contact sheets, versão aprovada, FFmpeg, trilha e legendas |
+| P2 | Recursos avançados do Flow | Edit, Extend, Scenebuilder, Agent, Tools, avatars/voices por detecção real |
+| P2 | Higgsfield e outros provedores | Contratos e testes de integração independentes |
+| P2 | UI de acompanhamento | Somente depois de haver fluxo operacional confiável |
+
+Acompanhe [issues](https://github.com/kivervinicius/visual-production-mcp/issues), [contrato do Flow](docs/FLOW_WORKFLOWS.md), [lacunas de implementação](docs/IMPLEMENTATION_GAPS.md) e [segurança](docs/SECURITY.md).
+
+## 10. Referências oficiais e licenciamento
+
+- [Google Flow — produto e recursos](https://labs.google/fx/tools/flow)
+- [Criar vídeos no Flow](https://support.google.com/flow/answer/16353334)
+- [Criar e editar imagens](https://support.google.com/flow/answer/16729550)
+- [Editar vídeos e utilizar Scenebuilder](https://support.google.com/flow/answer/16935718)
+- [Organizar projetos, assets e personagens](https://support.google.com/flow/answer/16935308)
+- [Modelos e recursos disponíveis](https://support.google.com/flow/answer/16352836)
+
+Projeto independente, **não oficial** e sem afiliação com Google ou Higgsfield. Operações e disponibilidade mudam por modelo, plano, região e política do provedor. Não remova marcas de procedência nem colete senhas, cookies, tokens de sessão ou códigos de autenticação.
+
+**Licença:** MIT (código próprio). Estado, histórias, referências e mídias permanecem locais sob `.studio/` e não são enviados ao GitHub por padrão.

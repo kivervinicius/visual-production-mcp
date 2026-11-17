@@ -1,32 +1,45 @@
-# Agent operating policy (Codex / Antigravity / other MCP clients)
+# Agent operating contract (Codex, Antigravity and other MCP clients)
 
-1. The canonical `production.json` and its declared `source` repo/ref/path are the single source of truth. Never invent lines, characters, settings or shots absent from the approved material.
-2. Separate production and provider projects: each provider account has independent project IDs, remote reference IDs and authentication. Never assume assets exist across accounts.
-3. Reuse existing media first. For `Arquivo Amanhã`, preserve `MT-EP01-INICIOS-v1`; inventory it before adding anything.
-4. First call `studio_status`, then `studio_sync_plan` to determine which references are actually missing. Never recreate an entire project as a shortcut.
-5. `studio_plan` is safe/dry in terms of paid generation, but it stores reservations. Verify cost quotes in the live provider UI; credit estimates are manual, not authoritative.
-6. Do not dispatch unless an operator explicitly approved the job through the CLI and confirmed the account's provider access, policy and balance.
-7. If any job has `submission_unknown`, do not retry, rotate account, or call another paid generation for that shot. Reconcile based on provider UI and logs.
-8. Do not use automation to evade service limits, CAPTCHA, paywalls or account protections. Surface limits and require authorized human intervention.
-9. Never put auth tokens, passwords, cookies, emails or Chrome profile secrets in manifests, commits, screenshots or reports.
-10. Before making a patch: run `npm test` and `npm run check`; add regression coverage for changed state transitions.
-11. Prefer public, documented provider APIs where available; isolate browser automation behind replaceable adapters. Never invoke undocumented paid Google RPC endpoints directly.
-12. If a provider is offline, report the limitation; do not simulate a real generation or fabricate resulting media files.
+## When the user provides only a story
 
-### v0.2 operational constraints
+**Do not require the user to learn JSON, prompts, shot lists, model names or accounts.** Guide them with these seven MCP tools in this order:
 
-- Inspect `docs/BACKLOG.md` before claiming a provider integration is functional.
-- Do not mark `submission_unknown` as confirmed through MCP; this requires the separate operator CLI.
-- Media import verifies technical file format only. Creative review remains human-only.
-- Use shared `libraryId` and immutable `version` to reuse characters across episodes; never silently mutate a published version.
-- Do not invent real-time account credit balances, available models or a provider-native project import API.
+1. `studio_story_start`: save the full original narrative; never overwrite an existing story ID with different text.
+2. `studio_story_source`: read **every chunk** until `hasMore=false`, preserve all named entities and chronological beats.
+3. `studio_story_submit_cast`: propose **only source-grounded** cast, environment and a coherent `visualStyle`. Each sourceExcerpt must match literal text. Any invented visual characteristic is flagged in `assumptions`, not misrepresented as story canon.
+4. `studio_story_submit_storyboard`: build all scenes, then each shot with literal `sourceExcerpt`, `visualPrompt`, `motionPrompt`, duration, cast IDs and optionally camera/audio. Check `sourceCoveragePercent`; the goal is the full story without inventing missing scenes.
+5. Stop for editorial review. Show scene count, shot order, style, character designs and assumptions. User/operator executes `npm run operator -- story-approve <storyId>`.
+6. The user selects an **authorized, independently registered** provider account. Call `studio_story_prepare` with a manual video credit estimate to compile production/workflow/character bible/edit manifest. This does **not** call Flow.
+7. `studio_workflow_plan` → `studio_workflow_inspect_step` → operator `workflow-approve` → `studio_workflow_execute_step` for individual operations only when adapter, exact account/project, quote and human consent are verified. Review each resulting image/video before relying on it.
 
-## Flow workflows (v0.3.0)
+For agent handoff or session recovery, use `studio_story_status` and `studio_story_draft`: the state is in the workspace, not in the chat history.
 
-- Read `docs/FLOW_WORKFLOWS.md` and `examples/workflow.flow.example.json` before starting any work.
-- Never claim a documented Flow operation is supported by the installed upstream without `studio_workflow_inspect_step` and actual UI/session validation.
-- The static operation catalog is not a live capabilities list. Always select a real model and duration after inspection.
-- Do not edit source scripts or canonical character references to fit the generated video. Revise versioned input under a new ID when necessary.
-- Only the local operator CLI approves paid or remote-mutating steps. Agent tools may import, plan, inspect, then execute **already approved** steps one at a time.
-- An operation result is `submission_unknown` if it lacks positive provider status and ID. Never automatically re-submit such operations.
-- No cross-account native IDs. Export/import and rebind references for any transfer; respect platform terms/quotas.
+The human can ask to revise cast **before** storyboarding or storyboard **before** editorial approval. After approval, create a new version/ID instead of mutating the canonical narrative.
+
+## Product constraints
+
+- The original narrative is the source of truth. Do not rewrite dialog, add characters/events or skip narrative beats without asking the user. Original story quotes are required for every cast entity and shot.
+- Canonical character IDs/references stay versioned; provider-native IDs are per-account and per-project. Don't leak or reuse a provider media ID in another account.
+- Flow's product-operation catalog is not proof that an installed MCP implements every action. Always inspect actual tool names, JSON Schema, the exact authorized account, active project, model capabilities and real credit quote.
+- Never treat `ready_for_confirmation`, a mere job ID without positive submission status, a screenshot of a form, or a mock as completed generation.
+- Human-only actions (`story-approve`, `workflow-approve`, uncertain-submission reconciliation, editorial review) must **not** be self-approved by the agent.
+- Avoid consuming credits on speculative/low-quality material: approve visual style/character sheets first, then reference images, then one shot, before batching the full episode.
+- Do not bypass account quotas, bans, CAPTCHAs, anti-bot controls or conditions of the providers; never automate account creation or rotate accounts to evade limits.
+- Secrets never go into prompt, repo, JSON manifests, logs or screenshots; operator's authenticated browser profile remains isolated.
+- If upstream doesn't support references, frame-to-video, duration, quality or character operations, fail visibly. **Do not silently discard creative input or downgrade model/ratio**.
+
+## Repo development rules
+
+- Local source files use ESM Node and builtin test runner; keep core and guide tools runnable without network access.
+- SDK MCP stdout is reserved for protocol traffic. Diagnostics go to stderr, never stdout.
+- Tests must cover every state transition and unknown result, with simulated MCPs; do not mark mocked generations as verified live functionality.
+- Maintain README.md and CHANGELOG.md when adding workflow stages and clarify status vs real provider integration.
+- Check `npm run check` and `npm test`; SDK integration requires separate npm install and CI checks.
+- Never claim media production succeeded without a verified provider operation and inspected original asset.
+
+## Helpful pointers
+
+- [Complete walkthrough](README.md)
+- [Example story](examples/story.example.md), [cast](examples/cast.example.json), [storyboard](examples/storyboard.example.json)
+- [Flow operations and contracts](docs/FLOW_WORKFLOWS.md)
+- [Pending actual integrations](docs/IMPLEMENTATION_GAPS.md)

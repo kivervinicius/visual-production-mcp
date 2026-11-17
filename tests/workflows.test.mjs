@@ -6,7 +6,7 @@ import path from 'node:path';
 import { Studio } from '../src/core.mjs';
 import { WorkflowStudio,validateWorkflow } from '../src/workflows.mjs';
 import { listFlowOperations } from '../src/flow-operations.mjs';
-import { compileArguments,validateToolSignature,executeWorkflowStep,inspectWorkflowStep,resolveWorkflowInputs } from '../src/workflow-adapter.mjs';
+import { compileArguments,validateToolSignature,executeWorkflowStep,inspectWorkflowStep,resolveWorkflowInputs,validateSemanticCoverage } from '../src/workflow-adapter.mjs';
 
 async function setup(t,{credits=100}={}) {
   const dir=await fs.mkdtemp(path.join(os.tmpdir(),'studio-workflow-'));
@@ -157,4 +157,11 @@ test('an approved canonical project cannot silently change after importing a wor
   const file=path.join(dir,'revised-project.json');
   await fs.writeFile(file,JSON.stringify(manifest));
   await assert.rejects(studio.importProject(file),/jobs\/workflows/);
+});
+
+test('adapter refuses silent loss of story frame, cast references and shot settings',()=>{
+  const mapping={arguments:{prompt:{from:'input.prompt'},aspectRatio:{from:'input.aspectRatio'}}};
+  assert.throws(()=>validateSemanticCoverage(mapping,'image.generate',{prompt:'Hero still',aspectRatio:'9:16',referenceImages:['step:character-image-lia']}),/drops required creative input referenceImages/);
+  assert.throws(()=>validateSemanticCoverage({arguments:{prompt:{from:'input.prompt'}}},'video.frames',{prompt:'Animate',startFrame:'step:image'}),/drops required creative input startFrame/);
+  assert.equal(validateSemanticCoverage({arguments:{prompt:{from:'input.prompt'},startFrame:{from:'input.startFrame'}}},'video.frames',{prompt:'Animate',startFrame:'step:image'}),true);
 });

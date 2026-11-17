@@ -2,12 +2,23 @@
 import { Studio } from './core.mjs';
 import { reviewResult } from './media.mjs';
 import { WorkflowStudio } from './workflows.mjs';
+import { StoryGuide } from './story-guide.mjs';
 const studio = new Studio();
 const workflows = new WorkflowStudio(studio);
+const stories = new StoryGuide(studio);
 const [command, ...params] = process.argv.slice(2);
 try {
   let value;
   switch (command) {
+    case 'story-start':
+      if(!params[0]||!params[1]||!params[2])throw new Error('Usage: npm run operator -- story-start <id> <title> <story.txt>');
+      value=await stories.create({id:params[0],title:params[1],storyPath:params[2]});break;
+    case 'story-status':
+      if(!params[0])throw new Error('Usage: npm run operator -- story-status <storyId>');
+      value=await stories.status(params[0]);break;
+    case 'story-approve':
+      if(!params[0])throw new Error('Usage: npm run operator -- story-approve <storyId>');
+      value=await stories.approve(params[0]);break;
     case 'approve':
       if (!params[0]) throw new Error('Usage: npm run operator -- approve <jobId>');
       value = await studio.approve(params[0], true); break;
@@ -36,7 +47,7 @@ try {
       if (!params[0]) throw new Error('Usage: npm run operator -- workflow-plan <workflowId>');
       value = await workflows.plan(params[0]); break;
     case 'status': value = await studio.list(); break;
-    default: throw new Error('Operator commands: workflow-import <file> | workflow-plan <id> | workflow-approve <id> <step> | workflow-reconcile <id> <step> <remoteJob> | workflow-complete <id> <step> <remoteAsset> <evidence> | approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
+    default: throw new Error('Operator commands: story-start <id> <title> <storyfile> | story-status <id> | story-approve <id> | workflow-import <file> | workflow-plan <id> | workflow-approve <id> <step> | workflow-reconcile <id> <step> <remoteJob> | workflow-complete <id> <step> <remoteAsset> <evidence> | approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
   }
   console.log(JSON.stringify(value, null, 2));
 } catch (error) { console.error(error.message); process.exitCode = 1; }

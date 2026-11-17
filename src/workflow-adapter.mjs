@@ -27,6 +27,21 @@ export function compileArguments(mapping, context) {
   }
   return result;
 }
+/** Refuse a provider adapter that silently drops material directions, frames or references.
+ * This is independent of provider schema validation: a syntactically valid call may
+ * still be editorially wrong when a critical source frame was discarded.
+ */
+export function validateSemanticCoverage(mapping, operation, inputs) {
+  assert(inputs && typeof inputs === 'object' && !Array.isArray(inputs),'Workflow inputs must be an object');
+  const covered=new Set(Object.values(mapping.arguments||{}).filter(x=>x && typeof x.from==='string' && x.from.startsWith('input.')).map(x=>x.from.substring(6)));
+  const internallyResolved=new Set(operation==='asset.upload'?['assetId']:[]);
+  for(const name of Object.keys(inputs)) {
+    if(internallyResolved.has(name))continue;
+    assert(covered.has(name),`Adapter for ${operation} drops required creative input ${name}; map input.${name} or remove the field explicitly in a new approved workflow`);
+  }
+  if(operation==='asset.upload')assert(covered.has('localPath'), 'Asset upload adapter must use the verified localPath');
+  return true;
+}
 export function validateToolSignature(tool, args) {
   assert(tool?.inputSchema?.type==='object',`Cannot validate upstream schema for ${tool?.name}`);
   const schema=tool.inputSchema;
@@ -112,6 +127,7 @@ export async function inspectWorkflowStep(studio,workflowId,stepId,{connection=w
   const mapping=await readAdapter(studio.studio.store.home,account.provider,step.operation);
   const binding=state.bindings[`${w.spec.projectId}::${step.accountId}`];
   const input=resolveWorkflowInputs(state,w,step,studio.studio.store.home);
+  validateSemanticCoverage(mapping,step.operation,input);
   const args=compileArguments(mapping.arguments,{input,account, binding,
     workflow:{id:workflowId,projectId:w.spec.projectId},step:{id:stepId}});
   const inspected=await connection(studio.studio.store.home,account.upstreamId,async client=>{
@@ -136,6 +152,7 @@ export async function executeWorkflowStep(studio,workflowId,stepId,{connection=w
     const state=await studio.studio.store.read();
     const binding=state.bindings[`${projectId}::${account.id}`];
     const input=resolveWorkflowInputs(state,await studio.get(workflowId),step,studio.studio.store.home);
+    validateSemanticCoverage(mapping,step.operation,input);
     const args=compileArguments(mapping.arguments,{input,account,binding,
       workflow:{id:workflowId,projectId,remoteProjectId},step:{id:stepId}});
     const response=await connection(studio.studio.store.home,account.upstreamId,async client=>{

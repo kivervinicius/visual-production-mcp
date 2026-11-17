@@ -1,3 +1,5 @@
+> **New in v0.4:** users can start with a story instead of supplying a production/workflow JSON. See the [complete README](../README.md), the `studio_story_*` tools in `src/story-guide.mjs` and `examples/story.example.md`. The steps below are still relevant for lower-level operators or existing workflows.
+
 # Google Flow: versioned workflow orchestration (v0.3.0)
 
 The **Flow product catalog** is distinct from **live account capabilities** and **upstream MCP tool support**. The 23 operations currently enumerated in `src/flow-operations.mjs` represent documented product concepts, NOT 19 implemented/verified browser automations.
