@@ -1,4 +1,4 @@
-# Engineering backlog — audited after v0.2.0
+# Engineering backlog — audited after v0.3.0
 
 Status names: DONE = covered by local tests, PARTIAL = interface/guard exists but no live provider E2E, OPEN = not implemented. Never mistake a mocked or locally verified feature for an authenticated Flow operation.
 
@@ -7,7 +7,7 @@ Status names: DONE = covered by local tests, PARTIAL = interface/guard exists bu
 | P0 | Stable local manifests, hashes and character registry | DONE | Same `libraryId@version` never changes silently; 2 projects share the same canonical character digest |
 | P0 | Provider session isolation and policy checks | PARTIAL | Each account binds a real session verified read-only; provider policy reviewed before bulk automation |
 | P0 | Prevent double credit spend after timeout | DONE local | `submission_unknown` never retries; only operator CLI may reconcile using provider evidence |
-| P0 | Provider adapter contracts | OPEN | Inspected MCP schema maps native project, reference, generation and job status; no agent-guessed arguments |
+| P0 | Provider adapter contracts | PARTIAL (schema mapped, not live) | Inspected MCP schema maps native project, reference, generation and job status; no agent-guessed arguments |
 | P0 | Real Google Flow integration | OPEN | Can create one native project, sync references, submit and correlate one job using a single authenticated account |
 | P0 | Cross-account replay | OPEN | With two authorized accounts, sync same source images and character definitions, verify changed remote IDs and no duplicate asset uploads |
 | P1 | Persistent jobs and crash recovery | PARTIAL | JSON state persists under lock, but browser/job recovery still requires the upstream bridge and manual reconciliation |
@@ -29,3 +29,15 @@ Status names: DONE = covered by local tests, PARTIAL = interface/guard exists bu
 - Character references use a global `libraryId` and version. Native Flow/Higgsfield character IDs are only account-bound projections.
 - One shot may have different provider results; avoid claiming bit-identical replay or guaranteed consistency across models.
 - Credit estimates are informational until provider confirms costs. Explicit per-job operator approval remains necessary.
+
+## v0.3 follow-up: Flow creation breadth
+
+- [x] Product taxonomy for image, video, characters, scene, agent and custom Tool workflow operations.
+- [x] Persistent DAG, immutable inputs, account-local reference resolution and cross-account ID guards.
+- [x] Operator-approved one-shot submission with schema inspection and `submission_unknown` protection.
+- [ ] Authenticated adapter for Flow project creation, reference uploads and automatic native-ID binding.
+- [ ] Live account inspection: session, region/plan, model, duration, ratio, credit quote, quotas and circuit-breaker.
+- [ ] Media retrieval, exact job/asset association, QC and storyboard review.
+- [ ] Real Scenebuilder editing, characters/voices, Flow Agent and custom Tools through verified adapters.
+- [ ] Fully automatic resumable episode from immutable narrative to rendered video (with human gates).
+- [ ] Operational end-to-end tests with a manually authorized, permitted account.

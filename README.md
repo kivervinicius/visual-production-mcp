@@ -2,11 +2,22 @@
 
 [![CI](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml)
 
-**v0.2.0 — experimental, local-first production coordinator.** Not a working end-to-end Google Flow / Higgsfield video generator yet.
+**v0.3.0 — experimental, local-first production coordinator.** Not a working end-to-end Google Flow / Higgsfield video generator yet.
 
 A provider-neutral Model Context Protocol (MCP) server to help coding agents such as Codex and Antigravity plan audiovisual productions, share **immutable character identities** across episodes, track account-local projects, allocate independent per-account budgets and preserve downloaded results.
 
 **Important:** A canonical production in this repository is **not** a Google Flow project. Provider-local projects must be created, populated and verified separately. This project does not transfer Google credits between accounts, bypass provider restrictions or make private APIs official.
+
+## New in v0.3: Google Flow workflows
+
+- A canonical **23-operation Flow catalog**, covering image, video, frame-to-video, ingredients, video edit/extend, scenes, characters, asset organization, Flow Agent and custom Flow Tools. This is a **documented-product catalog, not verified live automation**.
+- Immutable DAG workflows (`studio_workflow_import`) with dependency checks, account-scoped references, explicit spend estimates and recovery-safe states. Plan/inspect/execute steps independently.
+- Operator-owned adapter mappings that bind operation-specific inputs to **discovered real upstream MCP tools**. A schema preflight runs before any dispatch attempt.
+- Workflow execution is one-shot, human-approved and fail-closed. A returned `jobId` **without evidence of actual submission** does not count as successful paid generation.
+- Cross-account native media IDs are rejected; the transfer path is canonical download/import/rebind, not ID reuse.
+- 27 local automated tests. Provider login, actual Flow generation and end-to-end video delivery **not yet validated**.
+
+See [Flow workflow contract](docs/FLOW_WORKFLOWS.md), [example workflow](examples/workflow.flow.example.json) and [example adapter](examples/adapters.example.json).
 
 ## What works now
 
@@ -18,7 +29,7 @@ A provider-neutral Model Context Protocol (MCP) server to help coding agents suc
 - `studio_ingest_result`: requires a submitted provider operation ID, copies an existing local file into content-addressed storage, validates image signature or uses FFprobe to inspect video, records the hash and sets **editorial review to pending**.
 - Local-only operator CLI for reconciliation of uncertain submissions and editorial approval/rejection.
 - MCP v2 stdio host with upstream MCP discovery and a restrictive allowlisted dispatch bridge.
-- 12 Node built-in tests (local core); provider/browser end-to-end tests remain outstanding.
+- 27 Node built-in tests (local core and simulated MCP adapter); provider/browser end-to-end tests remain outstanding.
 
 ## Install
 
@@ -59,7 +70,7 @@ Antigravity and other MCP hosts should use `command=node`, `args=[absolute path 
 9. After inspecting story, continuity and visual quality, human runs `npm run operator -- review <jobId> approved|rejected [note]`.
 10. `studio_bundle` exports the original canonical manifest and reference bytes; this does not clone a native Flow project.
 
-## MCP tools (14)
+## MCP tools (21)
 
 | Tool | Purpose |
 | --- | --- |
@@ -78,6 +89,10 @@ Antigravity and other MCP hosts should use `command=node`, `args=[absolute path 
 | `studio_ingest_result` | Hash and validate an existing media file |
 | `studio_bundle` | Export a portable source package |
 
+### Workflow-specific tools
+
+`studio_flow_capabilities`, `studio_workflow_import`, `studio_workflow_list`, `studio_workflow_status`, `studio_workflow_plan`, `studio_workflow_inspect_step`, `studio_workflow_execute_step`.
+
 **Human-only operations are intentionally not exposed via MCP**: approve credit spend, reconcile ambiguous submissions and approve editorial quality. An agent's self-declared `operatorConfirmed=true` is not sufficient authorization.
 
 ## Source layout
@@ -93,7 +108,7 @@ Antigravity and other MCP hosts should use `command=node`, `args=[absolute path 
 
 ## Limitations and policy
 
-The server does not yet (a) create projects and upload reference characters into Google Flow, (b) clone projects between accounts, (c) verify live credit balances, (d) download Flow media, (e) generate videos through an authenticated account, or (f) assemble final episodes with FFmpeg. Real integration must be validated separately in each provider's permitted workflows.
+The server does not yet independently (a) create projects and upload reference characters into Google Flow, (b) clone projects between accounts, (c) verify live credit balances, (d) download Flow media, (e) generate videos through an authenticated account, or (f) assemble final episodes with FFmpeg. Real integration must be validated separately in each provider's permitted workflows.
 
 Accounts remain separate. Do not automate signups, rotate accounts to evade rate limits, bypass CAPTCHAs, remove provenance marks, or call undocumented private endpoints. Your own account access does not guarantee that multi-account automation is permitted under provider terms.
 

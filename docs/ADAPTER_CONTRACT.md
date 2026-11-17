@@ -1,4 +1,4 @@
-# Provider adapter contract (design target, not implemented as a generic interface yet)
+# Provider adapter contract (partially implemented; not authenticated)
 
 The core must not know Playwright selectors, browser cookies, undocumented RPC IDs, model-specific endpoints or provider credit schedules.
 
@@ -26,3 +26,11 @@ All methods must use typed errors: `AUTH_REQUIRED`, `UI_CHANGED`, `PROJECT_MISMA
 - Higgsfield official MCP/API: prefer documented supported integration over scraping.
 
 This is an integration specification, not a claim that any referenced MCP currently supports all methods. Verified live contract coverage must be tracked in an adapter test matrix before labeling an integration ready.
+
+## v0.3 implementation status
+
+The generic, operator-controlled mapping layer is implemented in `src/workflow-adapter.mjs`. It supports `{ "from": "input.prompt" }` and `{ "literal": true }` mappings, schema checks against a real upstream `listTools()`, output operation-ID parsing, and one-shot submission with conservative status classification. It does **not** implement any actual Google browser selector, native project creation, live authentication, credit quotation or download. Those must come from an independently installed, tested upstream MCP or future first-party adapter.
+
+**Do not mark an adapter compatible just because a tool name matches.** Inspect its live schema, account identity, Flow workspace access and resource IDs. If a tool returns `ready_for_confirmation`, a missing submission status or a bare job ID, it is not confirmed paid submission; the workflow becomes `submission_unknown` and can only be reconciled manually.
+
+The future adapter should provide a strict handshake containing `accountId`, `providerAccountFingerprint`, `remoteProjectId`, `modelCapabilities`, `creditQuote`, and `operationId`, with a separate read-only `reconcile()`. In particular, never merge two account sessions into a single anonymous browser worker.
