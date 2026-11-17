@@ -162,7 +162,7 @@ export class WorkflowStudio {
       const ready=blocked.length===0 && missing.length===0 && current.status==='approved' && Boolean(acct.upstreamId);
       return {id:step.id,operation:step.operation,accountId:step.accountId,status:current.status,
         dependsOn:step.dependsOn,blockedBy:blocked,missingReferences:missing,remoteProjectId,
-        approved:current.status!=='planned',readyForDispatch:ready,estimatedCredits:step.estimatedCredits,
+        approved:RESERVED.has(current.status),readyForDispatch:ready,estimatedCredits:step.estimatedCredits,
         creditKind:FLOW_OPERATIONS[step.operation].credit,
         upstreamConfigured:!!acct.upstreamId,output:current.output};
     });
