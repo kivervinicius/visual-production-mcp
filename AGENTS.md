@@ -20,3 +20,13 @@
 - Media import verifies technical file format only. Creative review remains human-only.
 - Use shared `libraryId` and immutable `version` to reuse characters across episodes; never silently mutate a published version.
 - Do not invent real-time account credit balances, available models or a provider-native project import API.
+
+## Flow workflows (v0.3.0)
+
+- Read `docs/FLOW_WORKFLOWS.md` and `examples/workflow.flow.example.json` before starting any work.
+- Never claim a documented Flow operation is supported by the installed upstream without `studio_workflow_inspect_step` and actual UI/session validation.
+- The static operation catalog is not a live capabilities list. Always select a real model and duration after inspection.
+- Do not edit source scripts or canonical character references to fit the generated video. Revise versioned input under a new ID when necessary.
+- Only the local operator CLI approves paid or remote-mutating steps. Agent tools may import, plan, inspect, then execute **already approved** steps one at a time.
+- An operation result is `submission_unknown` if it lacks positive provider status and ID. Never automatically re-submit such operations.
+- No cross-account native IDs. Export/import and rebind references for any transfer; respect platform terms/quotas.

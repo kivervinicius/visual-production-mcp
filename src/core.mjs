@@ -18,7 +18,7 @@ function now() { return new Date().toISOString(); }
 function positiveCredits(n) { assert(Number.isInteger(n) && n > 0, 'estimatedCredits must be a positive integer'); return n; }
 function clone(value) { return structuredClone(value); }
 function ensureWithin(base, file) { const abs = path.resolve(base, file); assert(abs.startsWith(path.resolve(base) + path.sep), `Asset path escapes manifest directory: ${file}`); return abs; }
-function emptyState() { return { schemaVersion: 2, accounts: {}, projects: {}, bindings: {}, jobs: {}, catalog: { characters: {} } }; }
+function emptyState() { return { schemaVersion: 2, accounts: {}, projects: {}, bindings: {}, jobs: {}, workflows: {}, catalog: { characters: {} } }; }
 async function sha256(file) { return createHash('sha256').update(await fs.readFile(file)).digest('hex'); }
 
 export class StudioStore {
@@ -92,8 +92,8 @@ export class Studio {
 
       const existing = state.projects[normalized.id];
       if (existing && existing.fingerprint !== fingerprint) {
-        const related = Object.values(state.jobs).some(j => j.projectId === normalized.id);
-        assert(!related, 'Project has jobs. Import revisions under a new project ID or implement explicit migration.');
+        const related = Object.values(state.jobs).some(j => j.projectId === normalized.id) || Object.values(state.workflows || {}).some(w => w.spec.projectId === normalized.id);
+        assert(!related, 'Project has jobs/workflows. Import revisions under a new project ID or implement explicit migration.');
       }
       for (const c of catalog) state.catalog.characters[c.key] = { ...c, updatedAt: now() };
       state.projects[normalized.id] = { manifest: normalized, fingerprint, updatedAt: now() };

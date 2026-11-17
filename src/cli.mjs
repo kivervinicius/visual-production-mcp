@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { Studio } from './core.mjs';
 import { reviewResult } from './media.mjs';
+import { WorkflowStudio } from './workflows.mjs';
 const studio = new Studio();
+const workflows = new WorkflowStudio(studio);
 const [command, ...params] = process.argv.slice(2);
 try {
   let value;
@@ -18,8 +20,23 @@ try {
     case 'review':
       if (!params[0] || !['approved','rejected'].includes(params[1])) throw new Error('Usage: npm run operator -- review <jobId> approved|rejected [note]');
       value = await reviewResult(studio,{jobId:params[0],decision:params[1],note:params.slice(2).join(' ')}); break;
+    case 'workflow-import':
+      if (!params[0]) throw new Error('Usage: npm run operator -- workflow-import /path/to/workflow.json');
+      value = await workflows.importFile(params[0]); break;
+    case 'workflow-approve':
+      if (!params[0] || !params[1]) throw new Error('Usage: npm run operator -- workflow-approve <workflowId> <stepId>');
+      value = await workflows.approve(params[0],params[1],true); break;
+    case 'workflow-reconcile':
+      if (!params[0] || !params[1] || !params[2]) throw new Error('Usage: npm run operator -- workflow-reconcile <workflowId> <stepId> <externalJobId>');
+      value = await workflows.mark(params[0],params[1],'submitted',{externalJobId:params[2],evidence:'Operator manually reconciled against provider UI'}); break;
+    case 'workflow-complete':
+      if (!params[0] || !params[1] || !params[2] || !params[3]) throw new Error('Usage: npm run operator -- workflow-complete <workflowId> <stepId> <providerAssetId> <evidenceNote>');
+      value = await workflows.mark(params[0],params[1],'completed',{output:{providerAssetId:params[2]},evidence:params.slice(3).join(' ')}); break;
+    case 'workflow-plan':
+      if (!params[0]) throw new Error('Usage: npm run operator -- workflow-plan <workflowId>');
+      value = await workflows.plan(params[0]); break;
     case 'status': value = await studio.list(); break;
-    default: throw new Error('Operator commands: approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
+    default: throw new Error('Operator commands: workflow-import <file> | workflow-plan <id> | workflow-approve <id> <step> | workflow-reconcile <id> <step> <remoteJob> | workflow-complete <id> <step> <remoteAsset> <evidence> | approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
   }
   console.log(JSON.stringify(value, null, 2));
 } catch (error) { console.error(error.message); process.exitCode = 1; }

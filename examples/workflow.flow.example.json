@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "demo-story-001",
+  "projectId": "demo-production",
+  "title": "Example Flow-directed mini-sequence (not a real episode)",
+  "steps": [
+    {
+      "id": "new-project",
+      "operation": "project.create",
+      "accountId": "g1",
+      "inputs": { "title": "Demo Story 001" },
+      "estimatedCredits": 0,
+      "dependsOn": []
+    },
+    {
+      "id": "opening-frame",
+      "operation": "image.generate",
+      "accountId": "g1",
+      "inputs": { "prompt": "An original still frame of a deserted rainy city, monochrome, widescreen silhouette", "aspectRatio": "9:16" },
+      "estimatedCredits": 0,
+      "dependsOn": ["new-project"]
+    },
+    {
+      "id": "opening-video",
+      "operation": "video.frames",
+      "accountId": "g1",
+      "inputs": {
+        "prompt": "Camera slowly moves forward through the rain, maintaining the scene geometry and lighting",
+        "startFrame": "step:opening-frame",
+        "aspectRatio": "9:16",
+        "durationSeconds": 8
+      },
+      "estimatedCredits": 40,
+      "dependsOn": ["opening-frame"]
+    },
+    {
+      "id": "assembled-scene",
+      "operation": "scene.compose",
+      "accountId": "g1",
+      "inputs": { "clips": ["step:opening-video"] },
+      "estimatedCredits": 0,
+      "dependsOn": ["opening-video"]
+    }
+  ]
+}

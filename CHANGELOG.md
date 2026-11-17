@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0 — Flow workflow foundation
+
+- Added 23 documented Google Flow operations in an explicit, non-live capability catalog.
+- Added immutable workflow DAGs, dependencies, local account binding checks and approval-aware credit reservation.
+- Added operator-configured, schema-inspected upstream MCP mapping and guarded one-shot execution.
+- Fixed false success when an upstream returns a prepared form/job ID without a positive submission state.
+- Resolved canonical `asset:` and same-account `step:` inputs; blocked cross-account native IDs.
+- Added workflow CLI commands, MCP tools, documentation and 27 local tests.
+- **Not yet validated against authenticated Flow or Higgsfield accounts; no credits used.**
+
+# Changelog
+
 ## 0.2.0 — production metadata and media integrity
 
 - Added reusable immutable character catalog keyed by explicit `libraryId@version` and reference hashes.

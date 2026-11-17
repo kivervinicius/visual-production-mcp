@@ -6,9 +6,13 @@ import { Studio } from './core.mjs';
 import { discoverUpstream, dispatchJob } from './upstream.mjs';
 import { ingestResult } from './media.mjs';
 import { preflight } from './preflight.mjs';
+import { WorkflowStudio } from './workflows.mjs';
+import { listFlowOperations } from './flow-operations.mjs';
+import { inspectWorkflowStep, executeWorkflowStep } from './workflow-adapter.mjs';
 
 const studio = new Studio();
-const server = new McpServer({ name: 'visual-production-mcp', version: '0.2.0' });
+const workflows = new WorkflowStudio(studio);
+const server = new McpServer({ name: 'visual-production-mcp', version: '0.3.0' });
 const result = x => ({ content: [{ type: 'text', text: JSON.stringify(x, null, 2) }] });
 const tool = (name, description, inputSchema, action) => server.registerTool(name, { description, inputSchema: z.object(inputSchema) }, async args => {
   try { return result(await action(args)); }
@@ -38,5 +42,15 @@ tool('studio_dispatch_job', 'Dispatch only an operator-approved job via a config
 tool('studio_record_failure', 'Record a confirmed upstream failure. Unknown submissions remain blocked until operator CLI reconciles them.', { jobId: z.string().uuid(), status: z.enum(['failed', 'submission_unknown']), note: z.string().max(1000).optional() }, ({jobId,status,note}) => studio.mark(jobId,status,{note}));
 tool('studio_ingest_result', 'Copy an already generated local media file into content-addressed storage, verify integrity and ffprobe video, then mark complete pending human editorial review. No generation or credit spend.', { jobId: z.string().uuid(), filePath: z.string().min(1), externalJobId: z.string().optional(), expectedSha256: z.string().regex(/^[a-f0-9]{64}$/).optional() }, args => ingestResult(studio,args));
 tool('studio_bundle', 'Export portable canonical project manifest and original reference assets to a local folder; does not include account credentials.', { projectId: id, outputDir: z.string().min(1) }, args => studio.bundle(args));
+
+
+// The documented Flow product surface and the real installed upstream MCP are deliberately separate.
+tool('studio_flow_capabilities', 'Read-only catalog of documented Google Flow operations; actual account capabilities require live inspection.', {}, () => listFlowOperations());
+tool('studio_workflow_import', 'Import a versioned DAG of Flow operations from an operator-controlled local JSON file. No provider calls or spending.', { workflowPath: z.string().min(1) }, ({ workflowPath }) => workflows.importFile(workflowPath));
+tool('studio_workflow_list', 'List local workflows and their persistent step states.', {}, () => workflows.list());
+tool('studio_workflow_status', 'Read a single workflow, its canonical inputs, approvals and recorded outcomes.', { workflowId: id }, ({ workflowId }) => workflows.get(workflowId));
+tool('studio_workflow_plan', 'Read-only dependency plan with per-account bindings, readiness and manual credit estimates.', { workflowId: id }, ({ workflowId }) => workflows.plan(workflowId));
+tool('studio_workflow_inspect_step', 'Verify tool name, parameters and required fields against the real upstream MCP schema. No spending or provider-login assertion.', { workflowId: id, stepId: id }, ({workflowId,stepId}) => inspectWorkflowStep(workflows,workflowId,stepId));
+tool('studio_workflow_execute_step', 'Submit exactly one previously OPERATOR-approved workflow step through configured upstream. On unknown result, block retries. Never rotates accounts.', { workflowId: id, stepId: id }, ({workflowId,stepId}) => executeWorkflowStep(workflows,workflowId,stepId));
 
 await server.connect(new StdioServerTransport());

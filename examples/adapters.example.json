@@ -1,0 +1,25 @@
+{
+  "google-flow": {
+    "video.text": {
+      "tool": "flow_generate_video",
+      "arguments": {
+        "prompt": { "from": "input.prompt" },
+        "aspectRatio": { "from": "input.aspectRatio" },
+        "model": { "from": "input.model" },
+        "accountId": { "from": "account.id" },
+        "confirmCreditSpend": { "literal": true }
+      },
+      "resultIdPaths": ["jobId", "job_id", "operationId", "data.jobId"],
+      "statusPaths": ["status", "state", "data.status"]
+    },
+    "image.generate": {
+      "tool": "flow_generate_image",
+      "arguments": {
+        "prompt": { "from": "input.prompt" },
+        "aspectRatio": { "from": "input.aspectRatio" },
+        "accountId": { "from": "account.id" },
+        "confirmCreditSpend": { "literal": true }
+      }
+    }
+  }
+}
