@@ -76,6 +76,7 @@ cd visual-production-mcp
 npm install
 npm run check
 npm test
+npm run test:mcp # handshake real MCP após instalar dependências
 
 mkdir -p .studio
 cp examples/upstreams.example.json .studio/upstreams.json

@@ -7,6 +7,7 @@
 - Compiles a canonical production, immutable Flow DAG, character/location reference plans, frame-to-video shot dependencies, storyboard, character bible, runbook and edit order; **no remote generation implied**.
 - Rejects adapter mappings that silently discard source frames, reference images, aspect ratio, duration or other supplied creative input.
 - Introduces resumable drafts for multiple agents, complete Portuguese README, canonical examples, and tests for the new guided stages.
+- CI now includes an actual MCP stdio handshake smoke test with the SDK; this verifies tool registration but not provider connectivity.
 - Known gaps remain: real authenticated Flow adapter, automatic remote asset synchronization, result recovery/ingestion for workflows, final FFmpeg assembly and npm SDK handshake verification.
 
 
