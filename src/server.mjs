@@ -15,6 +15,7 @@ import {planFlowRenderLink} from './application/deliver/flow-media-link.mjs';
 import { listFlowOperations } from './flow-operations.mjs';
 import { inspectWorkflowStep, executeWorkflowStep } from './workflow-adapter.mjs';
 import {inspectFlowAccount,inspectFlowStep,submitFlowStep,reconcileFlowStep,downloadFlowStep} from './providers/google-flow/miyakejima.mjs';
+import {planGflowFrameStep} from './providers/google-flow/frame-input-plan.mjs';
 
 const studio = new Studio();
 const workflows = new WorkflowStudio(studio);
@@ -69,6 +70,7 @@ tool('studio_workflow_inspect_step', 'Verify tool name, parameters and required 
 tool('studio_workflow_execute_step', 'Submit exactly one previously OPERATOR-approved workflow step through configured upstream. On unknown result, block retries. Never rotates accounts.', { workflowId: id, stepId: id }, ({workflowId,stepId}) => executeWorkflowStep(workflows,workflowId,stepId));
 
 // F3 upstream-profile integration. Only the verified image.generate and video.text subset is supported.
+tool('studio_gflow_frame_plan', 'READ ONLY: inspect exact verified start/end frames or ingredients for gflow-cli i2v/r2v; checks local hashes and optional upstream auth/schema; no credit spending.', { workflowId:id, stepId:id, probeUpstream:z.boolean().optional() }, ({workflowId,stepId,probeUpstream})=>planGflowFrameStep(workflows,workflowId,stepId,{probeUpstream}));
 tool('studio_flow_live_account', 'Verify the selected Flow account is connected, its workspace is available, and discover current models and ratios. READ-ONLY.', { accountId:id }, ({accountId})=>inspectFlowAccount(studio,accountId));
 tool('studio_flow_live_step', 'Inspect exact account, selected model, ratio, workflow project name and MCP tool schema before authorization. READ-ONLY.', { workflowId:id, stepId:id }, ({workflowId,stepId})=>inspectFlowStep(workflows,workflowId,stepId));
 tool('studio_flow_submit_step', 'F3: execute exactly one previously OPERATOR-approved image.generate or video.text with verified connected Flow account, no silent creative input loss. May spend credits; unknown responses lock the step.', { workflowId:id,stepId:id }, ({workflowId,stepId})=>submitFlowStep(workflows,workflowId,stepId));

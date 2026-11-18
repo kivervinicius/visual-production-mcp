@@ -124,3 +124,9 @@
 ## 0.1.0 — initial foundation
 
 - Canonical manifest import/export, account and native project bindings, independent budget planning, approvals and guarded upstream discovery/dispatch.
+
+## v0.8.2 — gflow-cli reference preflight
+
+- Implemented read-only, hash-checked preparation for `video.frames` → `i2v` and `video.ingredients` → `r2v`.
+- Added `studio_gflow_frame_plan`, CLI `flow-frame-plan [--live]`, schema/auth preflight and 13 fault/contract tests.
+- Paid execution, native project confirmation and live credit quote remain deliberately unsupported until authenticated E2E validation.

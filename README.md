@@ -442,3 +442,7 @@ Projeto independente, **não oficial** e sem afiliação com Google ou Higgsfiel
 ## Atualização F3: fronteira entre simulação e conta real
 
 O teste automatizado do adaptador simula respostas de um MCP Flow existente. Antes de afirmar que foi gerado um vídeo ou imagem em Google Flow, exige-se execução autenticada, UUID do job, mídia local com hash e revisão. Confira o [guia de homologação F3](docs/FLOW_LIVE_BRIDGE.md).
+
+## Pré-verificação de frames e ingredientes (v0.8.2)
+
+`studio_gflow_frame_plan` e `npm run operator -- flow-frame-plan <workflowId> <stepId> [--live]` associam os frames do storyboard a imagens locais com hash verificado, sem omitir referências. O novo caminho usa o contrato explícito do gflow-cli (`i2v` / `r2v`); o adaptador anterior continua limitado a geração por texto. **Este passo é somente leitura:** não gera vídeo, não consome créditos nem constitui homologação Flow. Veja [docs/GFLOW_FRAMES.md](docs/GFLOW_FRAMES.md).

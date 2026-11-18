@@ -72,3 +72,7 @@ Para uma conta Google Flow autorizada, prefira `studio_flow_live_account` e `stu
 ## v0.8.1: selecting completed Flow videos for local render
 
 Use `production_render_flow_link_plan` for read-only matching of archived provider jobs to an approved `video-*` storyboard slot. The agent must never select or approve footage itself: present the original and hashes to the operator. Only CLI `render-flow-attach <workflowId> <stepId> <packageDir> <clipSha256> <mappingSha256>` changes the render mapping. Keep all earlier mapping revisions and media immutable; run `render-plan` and `render` afterward. A completed provider job is **not** editorial approval. Read [FLOW_TO_RENDER.md](docs/FLOW_TO_RENDER.md).
+
+### Reference-aware frame preflight (v0.8.2)
+
+For a `video.frames`/`video.ingredients` step, call `studio_gflow_frame_plan` before suggesting any provider execution. The result pins local image bytes and SHA-256, account, mode, project and model. When `paidExecutionImplemented` is false, STOP: never switch to text-to-video, never use the arguments preview as an authorization for charged generation. See [GFLOW_FRAMES.md](docs/GFLOW_FRAMES.md).

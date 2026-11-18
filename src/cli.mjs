@@ -7,6 +7,7 @@ import { StageEngine } from './application/guide/stage-engine.mjs';
 import { VisualLibrary } from './application/library/visual-library.mjs';
 import {renderPlan,renderMedia,writeRenderTemplate,exportOfflineStory} from './application/deliver/media-composer.mjs';
 import {inspectFlowAccount,inspectFlowStep,reconcileFlowStep,downloadFlowStep} from './providers/google-flow/miyakejima.mjs';
+import {planGflowFrameStep} from './providers/google-flow/frame-input-plan.mjs';
 import {planFlowRenderLink,attachFlowRenderClip} from './application/deliver/flow-media-link.mjs';
 const studio = new Studio();
 const workflows = new WorkflowStudio(studio);
@@ -35,6 +36,10 @@ try {
     case 'render':
       if(!params[0])throw new Error('Usage: render <RENDER_INPUTS.json>');
       value=await renderMedia(params[0]);break;
+    case 'flow-frame-plan':
+      if(!params[0]||!params[1])throw new Error('Usage: flow-frame-plan <workflowId> <stepId> [--live]');
+      if(params[2]!==undefined && params[2]!=='--live')throw new Error('Only --live is supported');
+      value=await planGflowFrameStep(workflows,params[0],params[1],{probeUpstream:params[2]==='--live'});break;
     case 'flow-live-account':
       if(!params[0])throw new Error('Usage: flow-live-account <accountId>');
       value=await inspectFlowAccount(studio,params[0]);break;

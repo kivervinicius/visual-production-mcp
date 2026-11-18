@@ -70,3 +70,7 @@ Para um animatic **sem conta Flow**, após aprovação editorial use `production
 ## Associar original Flow a um plano local (v0.8.1)
 
 Quando houver `completed` e recibo com arquivo original SHA-256 de um job Flow, chame `production_render_flow_link_plan` informando `workflowId`, `stepId` e `packageDir`. Exiba o clipe original para decisão do operador; se o original não estiver acessível, não afirme que foi revisado. O operador executa `npm run operator -- render-flow-attach <workflowId> <stepId> <packageDir> <sha256> <mappingSha256>`. A escolha não é feita pelo agente. Depois verifique `production_render_plan` e informe que o operador pode executar `render`. Arquivos/variantes anteriores permanecem intocados. A bridge F3 ainda não suporta `video.frames` na conta real: não prometa um episódio Flow completo. Consulte [FLOW_TO_RENDER.md](../../docs/FLOW_TO_RENDER.md).
+
+## Frames e ingredientes (pré-verificação v0.8.2)
+
+Quando o roteiro solicitar um vídeo ancorado em imagem, usar `studio_gflow_frame_plan` e apresentar o modo, os SHA-256 das fontes e bloqueios. Essa ferramenta é somente leitura; `paidExecutionImplemented:false` exige parada antes de gerar. Nunca substituir Frames/Ingredients por text-to-video. Consulte [GFLOW_FRAMES.md](../../docs/GFLOW_FRAMES.md).

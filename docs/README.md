@@ -20,3 +20,5 @@ Documentos atuais de engenharia (v0.4): [ARCHITECTURE.md](ARCHITECTURE.md), [ADA
 - [Media Composer v0.8 — preview MP4 local, áudio, legendas, FFmpeg e QC](MEDIA_COMPOSER.md)
 
 - [Google Flow → Media Composer](FLOW_TO_RENDER.md) — validação do job original, associação com plano e seleção do operador (v0.8.1).
+
+- [gflow-cli — pré-verificação de Frames e Ingredients sem gasto (v0.8.2)](GFLOW_FRAMES.md)

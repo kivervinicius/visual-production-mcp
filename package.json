@@ -1,6 +1,6 @@
 {
   "name": "visual-production-mcp",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "private": true,
   "type": "module",
   "description": "Guided story-to-video planning and provider-neutral audiovisual production through MCP",
@@ -12,7 +12,7 @@
     "start": "node src/server.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:mcp": "node tests/mcp-smoke.mjs",
-    "check": "node --check src/core.mjs && node --check src/server.mjs && node --check src/upstream.mjs && node --check src/media.mjs && node --check src/preflight.mjs && node --check src/workflows.mjs && node --check src/workflow-adapter.mjs && node --check src/flow-operations.mjs && node --check src/story-guide.mjs && node --check src/application/guide/stage-engine.mjs && node --check src/application/library/visual-library.mjs && node --check src/cli.mjs && node --check src/providers/google-flow/miyakejima.mjs && node --check src/application/deliver/media-composer.mjs && node --check src/application/deliver/flow-media-link.mjs",
+    "check": "node --check src/core.mjs && node --check src/server.mjs && node --check src/upstream.mjs && node --check src/media.mjs && node --check src/preflight.mjs && node --check src/workflows.mjs && node --check src/workflow-adapter.mjs && node --check src/flow-operations.mjs && node --check src/story-guide.mjs && node --check src/application/guide/stage-engine.mjs && node --check src/application/library/visual-library.mjs && node --check src/cli.mjs && node --check src/providers/google-flow/miyakejima.mjs && node --check src/application/deliver/media-composer.mjs && node --check src/application/deliver/flow-media-link.mjs && node --check src/providers/google-flow/frame-input-plan.mjs",
     "operator": "node src/cli.mjs",
     "docs:check": "node scripts/check-docs.mjs"
   },
