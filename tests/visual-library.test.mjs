@@ -209,3 +209,15 @@ test('completed asset upload stores account-local provider ID and hash without c
  assert.equal(local.assetHashes[upload.inputs.assetId],state.projects[pkg.productionId].manifest.assets[0].sha256);
  assert.equal(state.bindings[`${pkg.productionId}::accountB`].assets[upload.inputs.assetId],undefined);
 });
+
+test('compilation rejects an unpinned global library identity instead of selecting a newer version silently',async t=>{
+ const {a,studio,library}=await fixture(t);
+ const p=await library.propose({libraryId:'shared/lia',kind:'character',name:'Lia',description:'Lia de casaco',referencePaths:[a]});
+ await library.decide({libraryId:'shared/lia',version:1,expectedFingerprint:p.fingerprint,decision:'approve'});
+ const guide=new StoryGuide(studio);
+ await guide.create({id:'unpin',title:'Sem pin',storyText:'Lia acena.'});
+ await guide.submitCast('unpin',{visualStyle:'2D',characters:[{id:'lia',name:'Lia',sourceExcerpt:'Lia acena.',designPrompt:'Lia de casaco',libraryId:'shared/lia'}],locations:[],assumptions:[]});
+ await guide.submitStoryboard('unpin',{scenes:[{id:'sc',title:'Cena',sourceExcerpt:'Lia acena.',shots:[{id:'shot',sourceExcerpt:'Lia acena.',visualPrompt:'Lia',motionPrompt:'Aceno',durationSeconds:5,characterIds:['lia']}]}]});
+ await guide.approve('unpin');await studio.registerAccount({id:'flow',label:'Conta',provider:'google-flow',authorized:true,creditEstimate:60});
+ await assert.rejects(guide.prepare({storyId:'unpin',accountId:'flow',videoEstimatedCredits:20}),/pin libraryVersion/);
+});
