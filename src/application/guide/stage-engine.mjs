@@ -52,7 +52,7 @@ function nextAction(story, state, guide, workflow, reviewVersion) {
     const accounts = Object.values(state.accounts || {}).filter(a => a.authorized && a.enabled && a.provider === 'google-flow');
     action = accounts.length
       ? { type: 'PREPARE_PRODUCTION', stage: 'REFERENCES', instruction: 'Compile os manifestos com a estimativa de créditos informada pelo operador; nenhum gasto nesta fase.', requiresHuman: false }
-      : { type: 'REGISTER_ACCOUNT', stage: 'REFERENCES', instruction: 'Cadastre uma conta Flow autorizada, sem fornecer senhas ou cookies. Não pressupor saldo real.', requiresHuman: true, tool: 'studio_register_account' };
+      : { type: 'REGISTER_ACCOUNT', stage: 'REFERENCES', instruction: 'Para geração paga, cadastre uma conta Flow autorizada. Para animatic offline, use render-export <storyId> no CLI, sem cadastrar conta ou gastar créditos.', requiresHuman: true, tool: 'studio_register_account', offlineAlternative: { command: `npm run operator -- render-export ${story.id}`, note: 'Exporta o storyboard aprovado para montagem local com mídias fornecidas pelo operador' } };
   } else if (!workflow) {
     action = { type: 'REPAIR_LOCAL_WORKFLOW', stage: 'REFERENCES', instruction: 'Pacote preparado sem registro do workflow. Não gere novamente; confira os arquivos e recupere o vínculo.', requiresHuman: true };
   } else {

@@ -9,14 +9,14 @@ import { fileURLToPath } from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const home=await fs.mkdtemp(path.join(os.tmpdir(),'vpm-mcp-smoke-'));
-const client=new Client({name:'visual-production-mcp-smoke',version:'0.7.0'});
+const client=new Client({name:'visual-production-mcp-smoke',version:'0.8.0'});
 try {
   const transport=new StdioClientTransport({command:process.execPath,args:[path.join(root,'src/server.mjs')],cwd:root,env:{...process.env,STUDIO_HOME:home}});
   await client.connect(transport);
   const {tools}=await client.listTools();
-  const expected=['studio_story_start','studio_story_status','studio_story_draft','studio_story_source','studio_story_submit_cast','studio_story_submit_storyboard','studio_story_prepare','studio_workflow_plan','production_get_status','production_get_next_action','production_events','studio_visual_list','studio_visual_propose','studio_visual_get','studio_visual_impact','studio_visual_shot_submit','studio_flow_live_account','studio_flow_live_step','studio_flow_submit_step','studio_flow_reconcile_step','studio_flow_download_step'];
+  const expected=['studio_story_start','studio_story_status','studio_story_draft','studio_story_source','studio_story_submit_cast','studio_story_submit_storyboard','studio_story_prepare','studio_workflow_plan','production_get_status','production_get_next_action','production_events','studio_visual_list','studio_visual_propose','studio_visual_get','studio_visual_impact','studio_visual_shot_submit','studio_flow_live_account','studio_flow_live_step','studio_flow_submit_step','studio_flow_reconcile_step','studio_flow_download_step','production_render_story_plan','production_render_template','production_render_plan'];
   for(const name of expected)assert(tools.some(x=>x.name===name),`Missing ${name} in MCP handshake`);
-  assert(!tools.some(x=>/visual_(approve|reject)|visual_shot_review/.test(x.name)),'Human visual approval must never be exposed as an MCP tool');
+  assert(!tools.some(x=>/visual_(approve|reject)|visual_shot_review|^production_render$/.test(x.name)),'Human visual approval must never be exposed as an MCP tool');
   const create=await client.callTool({name:'studio_story_start',arguments:{id:'smoke',title:'MCP handshake',storyText:'A mulher entra na oficina. A porta se fecha.'}});
   assert(!create.isError,'story_start returned MCP error');
   const status=await client.callTool({name:'studio_story_status',arguments:{storyId:'smoke'}});

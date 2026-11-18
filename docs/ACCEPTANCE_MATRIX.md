@@ -65,3 +65,7 @@ Referenciar cada critério nas issues/PRs; um item não verificado fica `PENDING
 ## Evidência parcial F2 (v0.6)
 
 Os testes locais de identidade, versionamento, aprovação visual, reutilização entre histórias, seleção de variante e atualização seletiva estão em `tests/visual-library.test.mjs`. O compilador evita regenerar uma imagem de personagem/local **quando a versão aprovada é compatível**. Isso comprova somente persistência e planejamento; o aceite de criação real no Flow, comparação visual de cenas e entrega MP4 continuam pendentes e não devem ser marcados completos por F2. Consulte [Biblioteca Visual](VISUAL_LIBRARY.md).
+
+## Evidência parcial A13 — Media Composer v0.8
+
+`tests/media-composer.test.mjs` cria arquivos reais de imagem, vídeo e áudio e executa FFmpeg para produzir MP4 com SRT, faixa AAC/legendas e relatório QC. Isso valida **composição técnica offline** e proteção contra perda de planos, alterações de duração e arquivos adulterados. **A13 permanece parcial** até validar integração com os assets aprovados da produção, revisão editorial dos planos e aprovação final de entrega. [Especificação do renderizador](MEDIA_COMPOSER.md).

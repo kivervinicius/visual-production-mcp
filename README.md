@@ -14,7 +14,7 @@ A versão atual é **v0.7.0 (planejamento guiado, biblioteca visual versionada e
 
 Para agentes, há uma [Skill de direção audiovisual](skills/visual-production-director/SKILL.md) que conduz a jornada usando ferramentas disponíveis e deixa explícitas as integrações ainda pendentes. Para implementar os próximos marcos, consulte o [Runbook](docs/IMPLEMENTATION_RUNBOOK.md) e [CONTRIBUTING.md](CONTRIBUTING.md). A documentação técnica está indexada em [docs/README.md](docs/README.md).
 
-**Regra de produto:** uma pessoa fornece a história e aprova as decisões essenciais; o MCP guarda progresso, evidências e próxima ação. O Flow real e a montagem final dependem de trabalhos técnicos ainda não homologados.
+**Regra de produto:** uma pessoa fornece a história e aprova as decisões essenciais; o MCP guarda progresso, evidências e próxima ação. A montagem local do MP4 (Media Composer v0.8) já funciona com imagens/clipes fornecidos; geração de mídia Flow real e aprovação final continuam pendentes.
 
 ## Integração com Google Flow (v0.7 / F3 parcial)
 
@@ -52,6 +52,23 @@ Quando já houver uma versão aprovada que corresponde ao briefing, `studio_stor
 Para cada imagem de cena, use `studio_visual_shot_submit` e, depois, a revisão humana `visual-shot-review` no CLI. As variantes rejeitadas permanecem preservadas e apenas o plano necessário precisa ser refeito. `studio_visual_impact` indica o que seria afetado por uma nova versão global, sem executar regeneração.
 
 [**Tutorial detalhado da Biblioteca Visual**](docs/VISUAL_LIBRARY.md) — exemplos de JSON, aprovação de referência, revisão de shot, hashes, vínculo entre histórias e limitações de produção.
+
+## Media Composer v0.8 — primeiro MP4 local
+
+Depois de aprovar elenco e storyboard, o operador consegue montar um animatic completo **sem sequer cadastrar conta Google Flow**, usando `render-export <storyId>`. Alternativamente, pode usar o pacote já gerado por `studio_story_prepare`. O roteiro, as cenas e as durações são lidos dos manifestos canônicos; o agente apenas relaciona cada plano à mídia local existente.
+
+```bash
+# Para iniciar sem conta Flow: exporte o roteiro e storyboard já aprovados.
+npm run operator -- render-export ep01
+npm run operator -- render-init '/caminho/.studio/stories/ep01/offline-render'
+# Adicione as imagens ou vídeos em production/media/ conforme o RENDER_INPUTS.json criado.
+npm run operator -- render-plan '/caminho/.studio/stories/ep01/offline-render/RENDER_INPUTS.json'
+npm run operator -- render '/caminho/.studio/stories/ep01/offline-render/RENDER_INPUTS.json'
+```
+
+As ferramentas MCP `production_render_story_plan`, `production_render_template` e `production_render_plan` são **somente leitura**; a codificação fica restrita à CLI do operador. A pasta de saída `rendered/<fingerprint>/` contém `final.mp4`, `QC_REPORT.json`, `RENDER_MANIFEST.json` e, se houver legendas, `subtitles.srt`. O MP4 pode conter faixa AAC e legendas `mov_text`. **Status final desta etapa: `PREVIEW_RENDERED`, nunca `DELIVERY COMPLETED` automaticamente.**
+
+[Contrato e procedimento completos do Media Composer](docs/MEDIA_COMPOSER.md).
 
 ## 1. O que é — e o que o usuário precisa fornecer
 
@@ -99,7 +116,7 @@ A pessoa permanece dona do roteiro e pode reutilizar a bíblia visual em novos e
 | Sincronizar referências entre contas | **Planejamento apenas** | Binding local; upload e hash remotos ainda não verificados |
 | Download e revisão de clipes gerados por workflow | **Manual/parcial** | Há ingestão verificada para jobs legados; não está integrado automaticamente à DAG |
 | Consultar 10 fases, próxima ação e eventos com retomada | **Implementado localmente** | Estado durável no StageEngine; não afirma que mídia remota foi validada |
-| Renderizar episódio final (FFmpeg/áudio/legenda) | **Pendente** | Exporta ordem de montagem, não MP4 final |
+| Renderizar *preview/animatic* MP4 (FFmpeg, áudio e legendas) | **Implementado localmente (v0.8)** | MP4 H.264 verificado, SRT e QC; não implica aprovação editorial ou geração real no Flow |
 | Biblioteca visual reutilizável e revisão de still por shot | **Implementado localmente (v0.6)** | Versões, fingerprints, referências SHA-256, aprovação no CLI e impacto seletivo; upload real ainda pendente |
 | Higgsfield | **Arquitetura prevista** | Ainda não existe adaptador end-to-end verificado |
 
@@ -113,7 +130,7 @@ O catálogo em `src/flow-operations.mjs` descreve **23 tipos de operações do p
 - Acesso ao repositório: [kivervinicius/visual-production-mcp](https://github.com/kivervinicius/visual-production-mcp).
 - Para planejar roteiros **não é necessário** ter conta no Flow nem instalar FFmpeg.
 - Para usar o Flow de verdade, instale um MCP de Flow compatível, autentique a sessão manualmente no navegador e valide as condições do provedor.
-- FFprobe/FFmpeg só são necessários para inspeção técnica de vídeos e pós-produção futura.
+- FFmpeg e FFprobe são **obrigatórios para o Media Composer v0.8**, que monta previews MP4; o planejamento de história continua independente deles.
 
 ```bash
 # Para testar a branch de desenvolvimento:
@@ -301,7 +318,7 @@ O agente usa:
 
 ### Passo 8 — Revisar e finalizar
 
-O workflow preserva a ordem das cenas no `EDIT_MANIFEST.json`, mas **não faz a montagem final de MP4** nesta versão. O processo ainda deve baixar os originais, conferir personagem a personagem, identificar cortes ruins e montar trilha, áudio, legendas e créditos num pipeline de pós-produção. Não se deve declarar um episódio entregue por ter somente job IDs do Flow.
+O workflow preserva a ordem das cenas no `EDIT_MANIFEST.json`. **A partir da v0.8, o Media Composer monta um preview MP4 real de imagens/clipes locais, áudio e legendas**, mediante um `RENDER_INPUTS.json` vinculado ao manifesto aprovado. A saída técnica continua sujeita à revisão criativa, ao uso de imagens/vídeos autorizados e à homologação de produção real no Flow. Consulte [MEDIA_COMPOSER.md](docs/MEDIA_COMPOSER.md).
 
 ## 5. Personagens reutilizáveis e múltiplas contas
 
@@ -387,7 +404,7 @@ Problemas típicos:
 | P0 | Conta Flow autenticada + operação real | Imagem e vídeo efetivamente criados, IDs corretos, créditos conferidos |
 | P0 | Upload incremental de referências | Hash canônico vinculado a mídia remota correta e reutilização comprovada |
 | P1 | Recuperação/download de mídia | Reanexar job sem duplicar gasto, FFprobe/sha256, testes de falha |
-| P1 | Revisão e montagem final | Contact sheets, versão aprovada, FFmpeg, trilha e legendas |
+| P1 | Revisão e entrega editorial | Media Composer já faz MP4 local; faltam QC criativo, seleção final e ligação automática ao Flow |
 | P2 | Recursos avançados do Flow | Edit, Extend, Scenebuilder, Agent, Tools, avatars/voices por detecção real |
 | P2 | Higgsfield e outros provedores | Contratos e testes de integração independentes |
 | P2 | UI de acompanhamento | Somente depois de haver fluxo operacional confiável |

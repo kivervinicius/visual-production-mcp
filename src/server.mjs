@@ -10,6 +10,7 @@ import { WorkflowStudio } from './workflows.mjs';
 import { StoryGuide } from './story-guide.mjs';
 import { StageEngine } from './application/guide/stage-engine.mjs';
 import { VisualLibrary } from './application/library/visual-library.mjs';
+import {renderPlan,renderTemplate,offlineStoryPlan} from './application/deliver/media-composer.mjs';
 import { listFlowOperations } from './flow-operations.mjs';
 import { inspectWorkflowStep, executeWorkflowStep } from './workflow-adapter.mjs';
 import {inspectFlowAccount,inspectFlowStep,submitFlowStep,reconcileFlowStep,downloadFlowStep} from './providers/google-flow/miyakejima.mjs';
@@ -19,7 +20,7 @@ const workflows = new WorkflowStudio(studio);
 const storyGuide = new StoryGuide(studio);
 const stageEngine = new StageEngine(studio);
 const visualLibrary = new VisualLibrary(studio);
-const server = new McpServer({ name: 'visual-production-mcp', version: '0.7.0' });
+const server = new McpServer({ name: 'visual-production-mcp', version: '0.8.0' });
 const result = x => ({ content: [{ type: 'text', text: JSON.stringify(x, null, 2) }] });
 const tool = (name, description, inputSchema, action) => server.registerTool(name, { description, inputSchema: z.object(inputSchema) }, async args => {
   try { return result(await action(args)); }
@@ -28,6 +29,11 @@ const tool = (name, description, inputSchema, action) => server.registerTool(nam
 
 const id = z.string().min(1).max(100);
 const strings = z.record(z.string(), z.string());
+
+// F4: read-only preview planning. Media rendering runs only from the local operator CLI.
+tool('production_render_story_plan','Read-only: summarize an approved story as an account-free animatic source, without writing files or requiring Flow login.',{storyId:id},({storyId})=>offlineStoryPlan(studio,storyId).then(({production,edit,...summary})=>summary));
+tool('production_render_template','Read the StoryGuide package and propose ordered image/video slots for a local FFmpeg render. Does not create files or consume provider credits.',{packageDir:z.string().min(1)},({packageDir})=>renderTemplate(packageDir));
+tool('production_render_plan','Preflight an explicit RENDER_INPUTS.json, verify scene order, file hashes, media tracks, durations, audio and subtitle timing. READ-ONLY.',{manifestPath:z.string().min(1)},({manifestPath})=>renderPlan(manifestPath));
 
 tool('studio_library', 'Legacy imported project character registry (not visual approvals). For reusable approved character/location images use studio_visual_list.', {}, () => studio.library());
 tool('studio_status', 'View locally registered projects, jobs and manually reported account budgets; no live credits are claimed.', {}, () => studio.list());
