@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.0 — F2: biblioteca visual e referências portáveis
+
+- Identidades visuais globais versionadas (personagem/local/estilo/objeto), propostas imutáveis, aprovação CLI e hashes locais verificados.
+- Candidatos de still por plano com seleção humana e histórico de variantes sem sobrescrever mídia.
+- Compile histórias com referências aprovadas: cópias canônicas + asset.upload em vez de regenerar personagens/locais; versão fixada e validação de descrição.
+- Vínculo de IDs de assets remoto no workflow após conclusão explicitamente conferida pelo operador (sem afirmação de verificação independente no Flow).
+- Impacto seletivo por plano e progresso visual observável no StageEngine; eventos de decisões.
+- Novas ferramentas studio_visual_*; testes de regressão para reutilização, integridade, múltiplas contas e concorrência.
+- **Não implementado:** upload real, geração de frames e vídeo via Flow autenticado, montagem MP4, controle editorial automatizado de imagens.
+
 ## 0.5.0 — durable stage guidance (issue #11)
 
 - Added a ten-stage StageEngine with persisted evidence-derived status, a single actionable next step, and cursor-based incremental events.
@@ -38,6 +48,16 @@
 - **Not yet validated against authenticated Flow or Higgsfield accounts; no credits used.**
 
 # Changelog
+
+## 0.6.0 — F2: biblioteca visual e referências portáveis
+
+- Identidades visuais globais versionadas (personagem/local/estilo/objeto), propostas imutáveis, aprovação CLI e hashes locais verificados.
+- Candidatos de still por plano com seleção humana e histórico de variantes sem sobrescrever mídia.
+- Compile histórias com referências aprovadas: cópias canônicas + asset.upload em vez de regenerar personagens/locais; versão fixada e validação de descrição.
+- Vínculo de IDs de assets remoto no workflow após conclusão explicitamente conferida pelo operador (sem afirmação de verificação independente no Flow).
+- Impacto seletivo por plano e progresso visual observável no StageEngine; eventos de decisões.
+- Novas ferramentas studio_visual_*; testes de regressão para reutilização, integridade, múltiplas contas e concorrência.
+- **Não implementado:** upload real, geração de frames e vídeo via Flow autenticado, montagem MP4, controle editorial automatizado de imagens.
 
 ## 0.5.0 — durable stage guidance (issue #11)
 

@@ -53,3 +53,7 @@ The human can ask to revise cast **before** storyboarding or storyboard **before
 - [Example story](examples/story.example.md), [cast](examples/cast.example.json), [storyboard](examples/storyboard.example.json)
 - [Flow operations and contracts](docs/FLOW_WORKFLOWS.md)
 - [Pending actual integrations](docs/IMPLEMENTATION_GAPS.md)
+
+## F2 — Biblioteca visual
+
+Antes de regenerar um personagem ou ambiente, consulte `studio_visual_list` e `studio_visual_get`. Não reutilize um ID remoto de outra conta; use o ID global e o hash aprovado, e programe upload ao projeto de destino. Não chame `studio_visual_propose` de aprovação: aprovação ocorre no CLI do operador com fingerprint conferido. Registre variantes de quadros com `studio_visual_shot_submit` e somente informe que um quadro está aprovado após `visual-shot-review` pelo operador. Se um modelo não suportar todas as referências, **falhe explicitamente**; não descarte ingredientes silenciosamente. Para instruções completas, consulte [Biblioteca visual](docs/VISUAL_LIBRARY.md).

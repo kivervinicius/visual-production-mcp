@@ -54,3 +54,7 @@ Exemplo: "Etapa 3/10 — Bíblia visual. Personagens e locais identificados e vi
 - [Aceite e evidências](../../docs/ACCEPTANCE_MATRIX.md)
 - [Contrato de desenvolvimento](../../AGENTS.md)
 - [Fases e avisos persistentes](../../docs/STAGE_ENGINE.md)
+
+## Continuidade visual reutilizável (F2)
+
+Antes de pedir geração de personagem/cenário, consulte `studio_visual_list`, `studio_visual_get` e `production_get_status.visualContinuity`. Se existir versão aprovada compatível com a descrição, proponha ao usuário fixar `libraryId` e `libraryVersion` em `studio_story_submit_cast`. Uma biblioteca visual *não* prova que a referência já existe na conta Flow ativa. Se não existir, guie a criação de uma imagem e seu download local antes de propor `studio_visual_propose`. Apresente a referência para revisão e oriente o operador a executar `npm run operator -- visual-approve <libraryId> <version> <fingerprint>`. Para stills de tomadas, use `studio_visual_shot_submit`, peça revisão com `visual-shot-review` e preserve cada variante. Use `studio_visual_impact` antes de alterar uma identidade compartilhada; não regenere episódios anteriores automaticamente. Para todo o procedimento, leia [VISUAL_LIBRARY.md](../../docs/VISUAL_LIBRARY.md).

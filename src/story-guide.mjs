@@ -8,6 +8,8 @@ import { createHash, randomUUID } from 'node:crypto';
 import { WorkflowStudio } from './workflows.mjs';
 
 const ID = /^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$/;
+const LIBRARY_ID = /^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,159}$/;
+const validLibraryId = value => LIBRARY_ID.test(value) && !value.split('/').some(x => ['__proto__','prototype','constructor','.','..',''].includes(x));
 const SHA = text => createHash('sha256').update(text, 'utf8').digest('hex');
 const assert = (ok, msg) => { if (!ok) throw new Error(msg); };
 const validId = (v, key) => { assert(typeof v === 'string' && ID.test(v) && !['__proto__','constructor','prototype','.','..'].includes(v), `${key}: invalid identifier`); return v; };
@@ -40,10 +42,11 @@ function validateCast(cast,source) {
   const characters=list(cast.characters,'characters');const locations=list(cast.locations,'locations');
   assert(characters.length<=100&&locations.length<=100,'Maximum 100 characters and 100 locations');
   unique(characters,'character'); unique(locations,'location');
-  for(const c of characters){text(c.name,'character name',200);text(c.designPrompt,'character designPrompt');idref(source,c.sourceExcerpt,`${c.id}.sourceExcerpt`);if(c.libraryId!==undefined)assert(/^[A-Za-z0-9][A-Za-z0-9._/-]{0,159}$/.test(c.libraryId),'Invalid character libraryId');}
-  for(const l of locations){text(l.name,'location name',200);text(l.designPrompt,'location designPrompt');idref(source,l.sourceExcerpt,`${l.id}.sourceExcerpt`);}
+  for(const c of characters){text(c.name,'character name',200);text(c.designPrompt,'character designPrompt');idref(source,c.sourceExcerpt,`${c.id}.sourceExcerpt`);if(c.libraryId!==undefined)assert(validLibraryId(c.libraryId),'Invalid character libraryId');if(c.libraryVersion!==undefined)assert(Number.isInteger(c.libraryVersion)&&c.libraryVersion>0&&c.libraryId,'Invalid character libraryVersion');}
+  for(const l of locations){text(l.name,'location name',200);text(l.designPrompt,'location designPrompt');idref(source,l.sourceExcerpt,`${l.id}.sourceExcerpt`);if(l.libraryId!==undefined)assert(validLibraryId(l.libraryId),'Invalid location libraryId');if(l.libraryVersion!==undefined)assert(Number.isInteger(l.libraryVersion)&&l.libraryVersion>0&&l.libraryId,'Invalid location libraryVersion');}
+  if(cast.styleLibraryId!==undefined)assert(validLibraryId(cast.styleLibraryId),'Invalid styleLibraryId');
   const assumptions=list(cast.assumptions||[],'assumptions');assert(assumptions.length<=100,'Too many assumptions');assumptions.forEach((a,i)=>text(a,`assumption ${i}`,2000));
-  return structuredClone({visualStyle,characters,locations,assumptions});
+  return structuredClone({visualStyle,characters,locations,assumptions,...(cast.styleLibraryId?{styleLibraryId:cast.styleLibraryId}:{})});
 }
 function validateStoryboard(board,source,cast) {
   assert(board && typeof board==='object' && !Array.isArray(board),'storyboard must be an object');
@@ -165,29 +168,66 @@ export class StoryGuide {
     const prodId=`${storyId}-production`,workflowId=`${storyId}-${accountId}-flow`;
     assert(prodId.length<=100 && workflowId.length<=100,'Story and account identifiers too long for production/workflow IDs');
     const {cast,storyboard}=s;
+    const approvedRevision=(kind,item,defaultId)=>{
+      const libraryId=item.libraryId||defaultId;
+      const entry=state.visualLibrary?.entities?.[libraryId];
+      if(entry)assert(entry.kind===kind,`Library kind mismatch for ${libraryId}`);
+      const revisions=Object.values(entry?.versions||{}).filter(r=>r.status==='approved').sort((a,b)=>b.version-a.version);
+      const found=item.libraryVersion!==undefined?revisions.find(r=>r.version===item.libraryVersion):revisions.find(r=>r.description===item.designPrompt);
+      if(item.libraryVersion!==undefined)assert(found,`Approved pinned visual library version missing: ${libraryId}@${item.libraryVersion}`);
+      if(found)assert(found.description===item.designPrompt,`Visual description mismatch for ${libraryId}@${found.version}; use a new story revision, never silently substitute`);
+      return found||null;
+    };
+    const approvedChars=new Map(cast.characters.map(c=>[c.id,approvedRevision('character',c,`${storyId}/${c.id}`)]));
+    const approvedLocations=new Map(cast.locations.map(l=>[l.id,approvedRevision('location',l,`${storyId}/${l.id}`)]));
     const manifest={schemaVersion:1,id:prodId,title:s.title,source:{type:'local-story',sha256:s.sha256,localRelativePath:'../source.md'},
-      assets:[],characters:cast.characters.map(c=>({id:c.id,libraryId:c.libraryId||`${storyId}/${c.id}`,version:1,description:c.designPrompt,referenceAssetIds:[],name:c.name,sourceExcerpt:c.sourceExcerpt})),shots:[]};
+      assets:[],characters:cast.characters.map(c=>({id:c.id,libraryId:c.libraryId||`${storyId}/${c.id}`,version:approvedChars.get(c.id)?.version||1,description:c.designPrompt,referenceAssetIds:[],name:c.name,sourceExcerpt:c.sourceExcerpt})),shots:[]};
     const steps=[];const videoSteps=[];const sceneSequence=[];
     const step=(id,operation,inputs,dependsOn=[],estimatedCredits=0)=>{
       assert(id.length<=100,'Compiled step identifier too long');
       steps.push({id,operation,accountId,inputs,dependsOn,estimatedCredits});return id;
     };
+    const assetByHash=new Map();
+    const useApprovedReference=ref=>{
+      if(assetByHash.has(ref.sha256))return assetByHash.get(ref.sha256);
+      assert(/^[a-f0-9]{64}$/.test(ref.sha256)&&/^assets\/[a-f0-9]{64}\.(png|jpg|webp)$/.test(ref.storedPath),'Invalid approved library asset');
+      const assetId=`ref-${ref.sha256.slice(0,32)}`;
+      manifest.assets.push({id:assetId,path:ref.storedPath,sha256:ref.sha256});
+      const uploadId=step(`upload-${assetId}`,'asset.upload',{assetId},[],0);
+      const used={assetId,token:`asset:${assetId}`,dependsOn:uploadId,ref};assetByHash.set(ref.sha256,used);
+      return used;
+    };
     const charRefs=new Map(), locationRefs=new Map();
     for(const c of cast.characters){
-      const ref=step(`character-image-${c.id}`,'image.generate',{prompt:`Style reference: ${cast.visualStyle}\nCharacter: ${c.name}. ${c.designPrompt}\nApproved source: ${c.sourceExcerpt}\nSingle clear subject; maintain stable identity across future views.`,aspectRatio:'9:16'},[],imageEstimatedCredits);
-      charRefs.set(c.id,ref);
-      if(includeCharacterCreation) step(`character-register-${c.id}`,'character.create',{characterId:c.id,source:`step:${ref}`},[ref],0);
+      const approved=approvedChars.get(c.id);
+      let refs;
+      if(approved){
+        assert(approved.references.length>0,`Approved character ${c.id} needs an image reference`);
+        refs=approved.references.map(useApprovedReference);
+        manifest.characters.find(x=>x.id===c.id).referenceAssetIds=refs.map(r=>r.assetId);
+      } else {
+        const ref=step(`character-image-${c.id}`,'image.generate',{prompt:`Style reference: ${cast.visualStyle}\nCharacter: ${c.name}. ${c.designPrompt}\nApproved source: ${c.sourceExcerpt}\nSingle clear subject; maintain stable identity across future views.`,aspectRatio:'9:16'},[],imageEstimatedCredits);
+        refs=[{token:`step:${ref}`,dependsOn:ref}];
+      }
+      charRefs.set(c.id,refs);
+      if(includeCharacterCreation)step(`character-register-${c.id}`,'character.create',{characterId:c.id,source:refs[0].token},[refs[0].dependsOn],0);
     }
-    for(const l of cast.locations){const ref=step(`location-image-${l.id}`,'image.generate',{prompt:`Style reference: ${cast.visualStyle}\nEnvironment: ${l.name}. ${l.designPrompt}\nApproved source: ${l.sourceExcerpt}\nClean environment reference, coherent geometry and lighting.`,aspectRatio:s.aspectRatio},[],imageEstimatedCredits);locationRefs.set(l.id,ref);}
+    for(const l of cast.locations){
+      const approved=approvedLocations.get(l.id);
+      if(approved){assert(approved.references.length>0,`Approved location ${l.id} needs an image reference`);locationRefs.set(l.id,approved.references.map(useApprovedReference));}
+      else {const ref=step(`location-image-${l.id}`,'image.generate',{prompt:`Style reference: ${cast.visualStyle}\nEnvironment: ${l.name}. ${l.designPrompt}\nApproved source: ${l.sourceExcerpt}\nClean environment reference, coherent geometry and lighting.`,aspectRatio:s.aspectRatio},[],imageEstimatedCredits);locationRefs.set(l.id,[{token:`step:${ref}`,dependsOn:ref}]);}
+    }
     for(const scene of storyboard.scenes){
       const clips=[];
       for(const shot of scene.shots){
-        const referenceSteps=[...new Set([...shot.characterIds.map(id=>charRefs.get(id)),...(scene.locationId?[locationRefs.get(scene.locationId)]:[])].filter(Boolean))];
+        const refs=[...new Map([...shot.characterIds.flatMap(id=>charRefs.get(id)||[]),...(scene.locationId?(locationRefs.get(scene.locationId)||[]):[])].map(x=>[x.token,x])).values()];
+        assert(refs.length<=5,`Shot ${shot.id} references ${refs.length} visual images; provider capability must be checked and explicit references selected; no silent truncation`);
+        const referenceSteps=[...new Set(refs.map(x=>x.dependsOn))];
         const characterInfo=shot.characterIds.map(id=>cast.characters.find(c=>c.id===id)).map(c=>`${c.name}: ${c.designPrompt}`).join('; ');
         const locationInfo=cast.locations.find(l=>l.id===scene.locationId);
         const frame=step(`frame-${shot.id}`,'image.generate',{
           prompt:`Visual style LOCK: ${cast.visualStyle}\nScene: ${scene.title}\nApproved action: ${shot.sourceExcerpt}\nFrame direction: ${shot.visualPrompt}\nCharacter continuity: ${characterInfo||'No characters'}\nEnvironment: ${locationInfo?.designPrompt||'Follow approved scene'}\nMaintain identity and composition; avoid unapproved text, logos and props.`,
-          aspectRatio:s.aspectRatio,...(referenceSteps.length?{referenceImages:referenceSteps.map(id=>`step:${id}`)}:{})
+          aspectRatio:s.aspectRatio,...(referenceSteps.length?{referenceImages:refs.map(x=>x.token)}:{})
         },referenceSteps,imageEstimatedCredits);
         const motion=step(`video-${shot.id}`,'video.frames',{
           prompt:`Story: ${shot.sourceExcerpt}\nMotion direction: ${shot.motionPrompt}\nCamera: ${shot.camera||'As described in the approved visual plan'}\nPreserve visual style and character continuity; do not add unapproved events.`,
@@ -204,6 +244,17 @@ export class StoryGuide {
       `Compiled prompt ${item.id} exceeds 20000 characters. Revise the editorial source in a new version; never truncate silently.`);
     const workflow={schemaVersion:1,id:workflowId,projectId:prodId,title:s.title,steps};
     const folder=path.join(dirs(this.studio.store.home,storyId),'production');await fs.mkdir(folder,{recursive:true,mode:0o700});
+    for(const asset of assetByHash.values()){
+      const src=path.join(this.studio.store.home,asset.ref.storedPath);
+      const dest=path.join(folder,asset.ref.storedPath);
+      await fs.mkdir(path.dirname(dest),{recursive:true,mode:0o700});
+      const contents=await fs.readFile(src);
+      assert(SHA(contents)===asset.ref.sha256,`Approved library asset changed: ${asset.assetId}`);
+      await fs.writeFile(dest,contents,{flag:'wx',mode:0o600}).catch(async e=>{
+        if(e.code!=='EEXIST')throw e;
+        assert(SHA(await fs.readFile(dest))===asset.ref.sha256,`Previously staged reference changed: ${asset.assetId}`);
+      });
+    }
     const manifestPath=path.join(folder,'production.json'),workflowPath=path.join(folder,'workflow.json');
     const screenplay=['# Storyboard — '+s.title,'','Editorial approval: '+s.approvedAt,'Source SHA-256: '+s.sha256,'','Visual style: '+cast.visualStyle,'','## Creative assumptions',...(cast.assumptions.length?cast.assumptions.map(x=>'- '+x):['- None recorded']),''];
     for(const sc of storyboard.scenes){screenplay.push('## '+sc.id+' — '+sc.title,'Source: '+sc.sourceExcerpt,'');for(const shot of sc.shots)screenplay.push('### '+shot.id+' ('+shot.durationSeconds+'s)','Story quote: '+shot.sourceExcerpt,'Still: '+shot.visualPrompt,'Motion: '+shot.motionPrompt,'Camera: '+(shot.camera||'to be confirmed'),'Audio: '+(shot.audio||'to be confirmed'),'');}
@@ -214,8 +265,9 @@ export class StoryGuide {
       '3. Create/select a remote Flow project and bind with studio_bind_project. Native IDs cannot cross accounts.',
       '4. For each step: studio_workflow_plan → studio_workflow_inspect_step → operator workflow-approve → studio_workflow_execute_step. Check costs and actual capabilities before approving.',
       '5. On submission_unknown, inspect Flow manually; never retry automatically. Reconcile operations and verify generated assets before marking complete.',
-      '6. Review character sheets, environment images, scene frames and videos before continuing. Enforce editorial continuity.',
-      '7. Download originals and retain hashes, source and provider metadata. Final FFmpeg assembly and audio are not automated in this version.',
+      '6. Propose and approve reference sheets with studio_visual_propose + operator visual-approve before locking recurring characters. Reused approved assets become upload steps; operator must verify remote asset IDs and bind them.',
+      '7. Review each shot still with studio_visual_shot_submit + operator visual-shot-review, then verify videos and continuity.',
+      '8. Download originals and retain hashes, source and provider metadata. Final FFmpeg assembly and audio are not automated in this version.',
       '', '## Summary',`Characters: ${cast.characters.length}`,`Locations: ${cast.locations.length}`,`Scenes: ${storyboard.scenes.length}`,`Shots: ${videoSteps.length}`,`Steps: ${steps.length}`,`Video credit estimate: ${videoSteps.length*videoEstimatedCredits} (manually supplied, not live provider quote)`,
       `Image quota/credit estimate: ${(steps.filter(x=>x.operation==='image.generate').length)*imageEstimatedCredits} (may use separate quotas)`,
       '', '## Editor sequence','The following list is the ordered shot list for eventual montage:',...sceneSequence.flatMap(x=>[x.sceneId+': '+x.shots.join(', ')])];
@@ -228,7 +280,7 @@ export class StoryGuide {
     await this.studio.importProject(manifestPath);
     await this.workflows.importFile(workflowPath);
     const prepared={accountId,videoEstimatedCredits,imageEstimatedCredits,includeCharacterCreation,includeSceneCompose,productionId:prodId,workflowId,
-      packageDir:folder,files:['production.json','workflow.json','STORYBOARD.md','CHARACTER_BIBLE.md','RUNBOOK.md','EDIT_MANIFEST.json'],
+      reusedReferenceImages:assetByHash.size,packageDir:folder,files:['production.json','workflow.json','STORYBOARD.md','CHARACTER_BIBLE.md','RUNBOOK.md','EDIT_MANIFEST.json'],
       steps:steps.length,videoShots:videoSteps.length,warning:'No remote project/images/videos were generated. Flow adapter must be configured and live-tested.'};
     await this.studio.store.mutate(state=>{const cur=state.stories[storyId];assert(cur.approvedAt===s.approvedAt,'Story approval changed');cur.prepared??=prepared;return cur.prepared;});
     return prepared;

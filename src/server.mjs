@@ -9,6 +9,7 @@ import { preflight } from './preflight.mjs';
 import { WorkflowStudio } from './workflows.mjs';
 import { StoryGuide } from './story-guide.mjs';
 import { StageEngine } from './application/guide/stage-engine.mjs';
+import { VisualLibrary } from './application/library/visual-library.mjs';
 import { listFlowOperations } from './flow-operations.mjs';
 import { inspectWorkflowStep, executeWorkflowStep } from './workflow-adapter.mjs';
 
@@ -16,7 +17,8 @@ const studio = new Studio();
 const workflows = new WorkflowStudio(studio);
 const storyGuide = new StoryGuide(studio);
 const stageEngine = new StageEngine(studio);
-const server = new McpServer({ name: 'visual-production-mcp', version: '0.5.0' });
+const visualLibrary = new VisualLibrary(studio);
+const server = new McpServer({ name: 'visual-production-mcp', version: '0.6.0' });
 const result = x => ({ content: [{ type: 'text', text: JSON.stringify(x, null, 2) }] });
 const tool = (name, description, inputSchema, action) => server.registerTool(name, { description, inputSchema: z.object(inputSchema) }, async args => {
   try { return result(await action(args)); }
@@ -26,7 +28,7 @@ const tool = (name, description, inputSchema, action) => server.registerTool(nam
 const id = z.string().min(1).max(100);
 const strings = z.record(z.string(), z.string());
 
-tool('studio_library', 'Show reusable, versioned canonical character registry and reference hashes without provider credentials.', {}, () => studio.library());
+tool('studio_library', 'Legacy imported project character registry (not visual approvals). For reusable approved character/location images use studio_visual_list.', {}, () => studio.library());
 tool('studio_status', 'View locally registered projects, jobs and manually reported account budgets; no live credits are claimed.', {}, () => studio.list());
 tool('studio_import_project', 'Import a versioned production manifest with asset hashes, character bible and shots from local disk.', { manifestPath: z.string().min(1) }, ({ manifestPath }) => studio.importProject(manifestPath));
 tool('studio_register_account', 'Register a separately authorized provider session and a manually reported credit estimate, never a password or cookie.', {
@@ -57,6 +59,36 @@ tool('studio_workflow_plan', 'Read-only dependency plan with per-account binding
 tool('studio_workflow_inspect_step', 'Verify tool name, parameters and required fields against the real upstream MCP schema. No spending or provider-login assertion.', { workflowId: id, stepId: id }, ({workflowId,stepId}) => inspectWorkflowStep(workflows,workflowId,stepId));
 tool('studio_workflow_execute_step', 'Submit exactly one previously OPERATOR-approved workflow step through configured upstream. On unknown result, block retries. Never rotates accounts.', { workflowId: id, stepId: id }, ({workflowId,stepId}) => executeWorkflowStep(workflows,workflowId,stepId));
 
+
+// Versioned visual continuity: agents can propose images but cannot grant editorial approval.
+const visualId = z.string().min(1).max(160);
+const visualKind = z.enum(['character','location','style','prop']);
+tool('studio_visual_list','List global visual library IDs and version/approval status, without exposing credentials.',{
+  kind:visualKind.optional(),approvedOnly:z.boolean().optional()
+},args=>visualLibrary.list(args));
+tool('studio_visual_get','Fetch an immutable versioned character, location, style or prop proposal for human review.',{
+  libraryId:visualId,version:z.number().int().positive().optional()
+},args=>visualLibrary.get(args));
+tool('studio_visual_propose','Register a new visual design version with optional local PNG/JPEG/WebP reference files. Proposals are not approved automatically; no paid generation.',{
+  libraryId:visualId,kind:visualKind,name:z.string().min(1).max(200),description:z.string().min(1).max(8000),
+  referencePaths:z.array(z.string()).max(12).optional(),attributes:z.record(z.string(),z.string()).optional(),originNotes:z.string().max(1200).optional()
+},args=>visualLibrary.propose(args));
+tool('studio_visual_verify','Re-hash stored reference images to confirm local file integrity; does not evaluate visual consistency.',{
+  libraryId:visualId,version:z.number().int().positive()
+},args=>visualLibrary.verify(args));
+tool('studio_visual_impact','Identify exact existing stories and canonical shots that use a versioned visual ID, without modifying them.',{
+  libraryId:visualId,version:z.number().int().positive()
+},args=>visualLibrary.impact(args));
+tool('studio_visual_project_readiness','Check whether characters pinned in an imported project have approved visual versions, without claiming remote Flow synchronization.',{
+  projectId:id
+},args=>visualLibrary.projectReadiness(args));
+tool('studio_visual_shot_submit','Register a local image candidate for a known canonical shot; operator approval is required. No provider call or generation.',{
+  projectId:id,shotId:id,variant:id,filePath:z.string().min(1),note:z.string().max(1200).optional()
+},args=>visualLibrary.submitShot(args));
+tool('studio_visual_shot_list','List all image variants and operator decisions for exactly one shot, including current approved selection.',{
+  projectId:id,shotId:id
+},args=>visualLibrary.shotList(args));
+
 // Story-first guided planning: agent turns the original story into an evidence-linked plan.
 // Production approvals remain operator-only, not tools callable by an autonomous agent.
 tool('studio_story_start','BEGIN HERE for a new film: accept one original story, preserve a SHA-256 snapshot, and return the next guided creative task. Never generates or spends credits.',{
@@ -70,8 +102,8 @@ tool('studio_story_source','Read an original narrative in small sections, includ
   storyId:id,offset:z.number().int().min(0).optional(),length:z.number().int().min(1).max(12000).optional()
 },({storyId,...options})=>storyGuide.source(storyId,options));
 tool('studio_story_submit_cast','Submit source-anchored characters, places, approved visual-style proposal, and explicitly disclosed creative assumptions. No media generation.',{
-  storyId:id,cast:z.object({visualStyle:z.string(),characters:z.array(z.object({id,name:z.string(),sourceExcerpt:z.string(),designPrompt:z.string(),libraryId:z.string().optional()})).max(100),
-    locations:z.array(z.object({id,name:z.string(),sourceExcerpt:z.string(),designPrompt:z.string()})).max(100),assumptions:z.array(z.string()).optional()})
+  storyId:id,cast:z.object({visualStyle:z.string(),characters:z.array(z.object({id,name:z.string(),sourceExcerpt:z.string(),designPrompt:z.string(),libraryId:z.string().optional(),libraryVersion:z.number().int().positive().optional()})).max(100),
+    locations:z.array(z.object({id,name:z.string(),sourceExcerpt:z.string(),designPrompt:z.string(),libraryId:z.string().optional(),libraryVersion:z.number().int().positive().optional()})).max(100),styleLibraryId:z.string().optional(),assumptions:z.array(z.string()).optional()})
 },({storyId,cast})=>storyGuide.submitCast(storyId,cast));
 tool('studio_story_submit_storyboard','Submit source-anchored ordered scenes and image/video shot directions with canonical character IDs; requires later human review.',{
   storyId:id,storyboard:z.object({scenes:z.array(z.object({id,title:z.string(),sourceExcerpt:z.string(),locationId:id.nullable().optional(),shots:z.array(z.object({id,sourceExcerpt:z.string(),visualPrompt:z.string(),motionPrompt:z.string(),durationSeconds:z.number().int(),characterIds:z.array(id).optional(),camera:z.string().optional(),audio:z.string().optional()}))}))})

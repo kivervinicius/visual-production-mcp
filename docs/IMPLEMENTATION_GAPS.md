@@ -89,3 +89,7 @@
 - `studio_workflow_complete` is operator-reported evidence, not an independently verified provider media receipt.
 - An image generated in an earlier step is represented by a provider-local asset ID; true cross-account reuse requires export -> canonical import -> new binding.
 - SDK v2 is targeted; add a committed npm lockfile from a network-enabled environment for reproducibility.
+
+## Atualização F2 / v0.6
+
+Biblioteca visual versionada, impacto por plano e seleção editorial de stills estão implementados **apenas localmente**. Ao compilar um roteiro que fixa uma referência aprovada, o compilador cria um passo `asset.upload` por conteúdo SHA-256, sem gerar novamente a imagem de personagem/local. Isto não equivale à homologação de upload real em Flow. O mapeamento operador-confirma `providerAssetId` precisa ser testado com bridge autenticada. Ver [VISUAL_LIBRARY.md](VISUAL_LIBRARY.md), [issue #12](https://github.com/kivervinicius/visual-production-mcp/issues/12).

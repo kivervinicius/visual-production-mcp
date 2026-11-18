@@ -113,6 +113,20 @@ function projections(story, state, guide, workflow) {
   for(const id of ['REVIEW','AUDIO_EDIT','DELIVERY'])result.push({id,status:'PENDING',evidence:'NOT_IMPLEMENTED_OR_VERIFIED'});
   return result;
 }
+function visualContinuity(story,state) {
+  const required=[...(story.cast?.characters||[]).map(c=>({kind:'character',libraryId:c.libraryId||`${story.id}/${c.id}`,version:c.libraryVersion||null})),
+    ...(story.cast?.locations||[]).map(l=>({kind:'location',libraryId:l.libraryId||`${story.id}/${l.id}`,version:l.libraryVersion||null})),
+    ...(story.cast?.styleLibraryId?[{kind:'style',libraryId:story.cast.styleLibraryId,version:null}]:[])];
+  const entries=required.map(x=>{
+    const item=state.visualLibrary?.entities?.[x.libraryId];
+    const versions=Object.values(item?.versions||{});
+    const rev=x.version?versions.find(v=>v.version===x.version):versions.filter(v=>v.status==='approved').sort((a,b)=>b.version-a.version)[0];
+    const status=!rev?'NOT_REGISTERED':rev.status!=='approved'?'UNAPPROVED':x.kind!=='style'&&!rev.references.length?'NO_REFERENCE':'APPROVED_LOCALLY';
+    return {...x,version:rev?.version||x.version,status,referenceCount:rev?.references?.length||0};
+  });
+  return {required:entries.length,locallyApproved:entries.filter(x=>x.status==='APPROVED_LOCALLY').length,items:entries,
+    note:'Local approval is separate from Flow upload, actual identity consistency and the editorial approval of each shot.'};
+}
 function stateView(story, state, guide) {
   const workflow = story.prepared && state.workflows?.[story.prepared.workflowId];
   const reviewVersion = revision(story);
@@ -120,7 +134,7 @@ function stateView(story, state, guide) {
   const next = nextAction(story,state,guide,workflow,reviewVersion);
   const completedStages = stages.filter(s=>s.status==='COMPLETED').length;
   return { schemaVersion:1,storyId:story.id,title:story.title,sourceSha256:story.sha256,reviewVersion,workflowId:story.prepared?.workflowId||null,
-    stage:next.stage,stages,nextAction:next,progress:{completedStages,totalStages:STAGES.length},
+    stage:next.stage,stages,nextAction:next,visualContinuity:visualContinuity(story,state),progress:{completedStages,totalStages:STAGES.length},
     pendingActions:next.requiresHuman?[next]:[], blockers:next.type==='RECONCILE_SUBMISSION'?[{code:'SUBMISSION_UNKNOWN',stepId:next.stepId}]:[],
     estimatedCredits:{value:null,verified:false}, eventsCursor:guide.cursor };
 }

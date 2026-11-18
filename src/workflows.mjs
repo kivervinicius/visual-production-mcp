@@ -204,6 +204,22 @@ export class WorkflowStudio {
       const cur=w.steps[stepId];assert(cur,`Unknown step ${stepId}`);
       assert(transitions[cur.status]?.includes(status),`Illegal transition ${cur.status} -> ${status}`);
       if(status==='completed')assert(details.output && typeof details.output==='object' && details.evidence,'Completion needs output and operator-checked evidence');
+      const step=w.spec.steps.find(s=>s.id===stepId);
+      if(status==='completed'&&step.operation==='asset.upload'){
+        const assetId=step.inputs.assetId;
+        const asset=state.projects[w.spec.projectId]?.manifest.assets.find(a=>a.id===assetId);
+        const binding=state.bindings[`${w.spec.projectId}::${step.accountId}`];
+        assert(asset && binding,'Cannot complete reference upload without canonical asset and account-local project binding');
+        const providerAssetId=details.output?.providerAssetId;
+        assert(typeof providerAssetId==='string'&&providerAssetId.trim()&&providerAssetId.length<=300,'Upload completion requires checked providerAssetId');
+        const old=binding.assets?.[assetId];
+        assert(!old||old===providerAssetId,'Provider asset binding conflict; explicit migration required');
+        binding.assets??={};binding.assetHashes??={};
+        binding.assets[assetId]=providerAssetId;
+        binding.assetHashes[assetId]=asset.sha256;
+        binding.updatedAt=new Date().toISOString();
+        binding.evidence='operator-reported upload completion; not live provider independently verified';
+      }
       if(details.externalJobId)cur.externalJobId=String(details.externalJobId).slice(0,200);
       if(details.output)cur.output=structuredClone(details.output);
       if(details.evidence)cur.evidence=String(details.evidence).slice(0,1000);

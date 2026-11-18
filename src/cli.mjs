@@ -4,14 +4,28 @@ import { reviewResult } from './media.mjs';
 import { WorkflowStudio } from './workflows.mjs';
 import { StoryGuide } from './story-guide.mjs';
 import { StageEngine } from './application/guide/stage-engine.mjs';
+import { VisualLibrary } from './application/library/visual-library.mjs';
 const studio = new Studio();
 const workflows = new WorkflowStudio(studio);
 const stories = new StoryGuide(studio);
 const stages = new StageEngine(studio);
+const library = new VisualLibrary(studio);
 const [command, ...params] = process.argv.slice(2);
 try {
   let value;
   switch (command) {
+    case 'visual-list':
+      value=await library.list();break;
+    case 'visual-status':
+      if(!params[0])throw new Error('Usage: visual-status <libraryId> [version]');
+      value=await library.get({libraryId:params[0],...(params[1]?{version:Number(params[1])}:{})});break;
+    case 'visual-approve':
+    case 'visual-reject':
+      if(!params[0]||!params[1]||!params[2])throw new Error(`Usage: ${command} <libraryId> <version> <expectedFingerprint> [note]`);
+      value=await library.decide({libraryId:params[0],version:Number(params[1]),expectedFingerprint:params[2],decision:command==='visual-approve'?'approve':'reject',note:params.slice(3).join(' ')});break;
+    case 'visual-shot-review':
+      if(!params[0]||!params[1]||!params[2]||!params[3]||!['approve','reject'].includes(params[4]))throw new Error('Usage: visual-shot-review <projectId> <shotId> <variant> <expectedSha256> approve|reject [note]');
+      value=await library.decideShot({projectId:params[0],shotId:params[1],variant:params[2],expectedSha256:params[3],decision:params[4],note:params.slice(5).join(' ')});break;
     case 'story-start':
       if(!params[0]||!params[1]||!params[2])throw new Error('Usage: npm run operator -- story-start <id> <title> <story.txt>');
       value=await stories.create({id:params[0],title:params[1],storyPath:params[2]});break;
@@ -61,7 +75,7 @@ try {
       if (!params[0]) throw new Error('Usage: npm run operator -- workflow-plan <workflowId>');
       value = await workflows.plan(params[0]); break;
     case 'status': value = await studio.list(); break;
-    default: throw new Error('Operator commands: production-status <id> | production-next <id> | production-events <id> [cursor] | production-decision <id> approve|request_changes <reviewVersion> [note] | story-start <id> <title> <storyfile> | story-status <id> | story-approve <id> | workflow-import <file> | workflow-plan <id> | workflow-approve <id> <step> | workflow-reconcile <id> <step> <remoteJob> | workflow-complete <id> <step> <remoteAsset> <evidence> | approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
+    default: throw new Error('Operator commands: visual-list | visual-status <libraryId> [version] | visual-approve <libraryId> <version> <fingerprint> | visual-reject <libraryId> <version> <fingerprint> <note> | visual-shot-review <projectId> <shotId> <variant> <sha256> approve|reject [note] | production-status <id> | production-next <id> | production-events <id> [cursor] | production-decision <id> approve|request_changes <reviewVersion> [note] | story-start <id> <title> <storyfile> | story-status <id> | story-approve <id> | workflow-import <file> | workflow-plan <id> | workflow-approve <id> <step> | workflow-reconcile <id> <step> <remoteJob> | workflow-complete <id> <step> <remoteAsset> <evidence> | approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
   }
   console.log(JSON.stringify(value, null, 2));
 } catch (error) { console.error(error.message); process.exitCode = 1; }
