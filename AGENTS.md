@@ -57,3 +57,7 @@ The human can ask to revise cast **before** storyboarding or storyboard **before
 ## F2 — Biblioteca visual
 
 Antes de regenerar um personagem ou ambiente, consulte `studio_visual_list` e `studio_visual_get`. Não reutilize um ID remoto de outra conta; use o ID global e o hash aprovado, e programe upload ao projeto de destino. Não chame `studio_visual_propose` de aprovação: aprovação ocorre no CLI do operador com fingerprint conferido. Registre variantes de quadros com `studio_visual_shot_submit` e somente informe que um quadro está aprovado após `visual-shot-review` pelo operador. Se um modelo não suportar todas as referências, **falhe explicitamente**; não descarte ingredientes silenciosamente. Para instruções completas, consulte [Biblioteca visual](docs/VISUAL_LIBRARY.md).
+
+## Flow live bridge F3 (v0.7)
+
+Para uma conta Google Flow autorizada, prefira `studio_flow_live_account` e `studio_flow_live_step` antes de executar. A bridge v0.7 é limitada a `image.generate` sem referências e `video.text`. Não converter `video.frames` nem `video.ingredients` em `video.text`, não apagar `referenceImages` ou startFrame para fazer a chamada passar. Aprovação financeira somente no CLI pelo operador. `studio_flow_submit_step` permite **uma submissão**, e `studio_flow_reconcile_step` consulta o mesmo job. Sem conta autenticada e mídia real validada, informe `BLOCKED`/`NOT_LIVE_TESTED` e não invente sucesso. Veja [docs/FLOW_LIVE_BRIDGE.md](docs/FLOW_LIVE_BRIDGE.md).

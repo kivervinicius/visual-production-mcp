@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0 — Flow upstream bridge (F3 pilot, not live-certified)
+
+- Added first-party adapter to the operator-managed `miyakejima/google-flow-mcp` tool contract with live account/profile inspection, capability/schema checks and single approved dispatch for image.generate/video.text.
+- Added deterministic reconciliation/download of a single persistent Flow job, SHA-256 archive, image signature and FFprobe verification; editorial approval remains separate.
+- Refuses silent mode changes, unsupported references/frames, account fallback and unverified model/ratio/duration; `submission_unknown` blocks retry.
+- Added bridge tests, configuration example, MCP tools/CLI and complete operator guide; no authenticated provider generation claimed.
+
+
 ## 0.6.0 — F2: biblioteca visual e referências portáveis
 
 - Identidades visuais globais versionadas (personagem/local/estilo/objeto), propostas imutáveis, aprovação CLI e hashes locais verificados.
@@ -48,6 +56,14 @@
 - **Not yet validated against authenticated Flow or Higgsfield accounts; no credits used.**
 
 # Changelog
+
+## 0.7.0 — Flow upstream bridge (F3 pilot, not live-certified)
+
+- Added first-party adapter to the operator-managed `miyakejima/google-flow-mcp` tool contract with live account/profile inspection, capability/schema checks and single approved dispatch for image.generate/video.text.
+- Added deterministic reconciliation/download of a single persistent Flow job, SHA-256 archive, image signature and FFprobe verification; editorial approval remains separate.
+- Refuses silent mode changes, unsupported references/frames, account fallback and unverified model/ratio/duration; `submission_unknown` blocks retry.
+- Added bridge tests, configuration example, MCP tools/CLI and complete operator guide; no authenticated provider generation claimed.
+
 
 ## 0.6.0 — F2: biblioteca visual e referências portáveis
 

@@ -14,3 +14,5 @@ Documentos atuais de engenharia (v0.4): [ARCHITECTURE.md](ARCHITECTURE.md), [ADA
 
 - [StageEngine — fases, eventos e decisões (v0.5)](STAGE_ENGINE.md)
 - [Biblioteca visual F2 — personagens, cenários, estilos, aprovação e referências](VISUAL_LIBRARY.md)
+
+- [Bridge Google Flow F3 — conta, geração simples, reconciliação e limites](FLOW_LIVE_BRIDGE.md)

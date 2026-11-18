@@ -2,19 +2,25 @@
 
 [![CI](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml)
 
-**v0.6.0 (experimental) · MCP para transformar histórias em planos de produção audiovisual · Local-first · Google Flow como primeiro adaptador**
+**v0.7.0 F3-piloto (experimental) · MCP para transformar histórias em planos de produção audiovisual · Local-first · Google Flow como primeiro adaptador**
 
 > **Comece com uma história, não com um JSON.** O usuário conta sua história ou fornece um arquivo `.md`/`.txt`; seu agente de IA (Codex, Antigravity ou outro cliente MCP) conduz a preparação passo a passo. O MCP preserva a fonte, valida a rastreabilidade do material proposto, organiza personagens/cenários/cenas e compila prompts e tarefas para produzir imagens e vídeos no provedor conectado.
 >
-> **Limite importante:** hoje o percurso **história → bíblia visual → storyboard → manifestos/workflow** funciona localmente e é testado. O percurso **workflow → geração real no Google Flow → download → edição final** ainda precisa de um adaptador autenticado e homologado. Não confunda *plano de produção* com *mídia gerada*.
+> **Limite importante:** hoje o percurso **história → bíblia visual → storyboard → manifestos/workflow** funciona localmente e é testado. Há agora uma bridge de conta Flow com pré-verificação, geração simples de imagem ou vídeo por texto e reconciliação de arquivos — **implementada, mas ainda não homologada com uma conta real**. Frames, ingredientes, personagens nativos e a edição final permanecem pendentes. Não confunda *plano de produção* com *mídia gerada*.
 
 ## Plano de finalização e desenvolvimento
 
-A versão atual é **v0.6.0 (planejamento guiado, biblioteca visual versionada e revisão por shot)**: ainda não é gerador de episódios completo. A estratégia de conclusão e os critérios para declarar v1.0 estão documentados em [Plano de finalização](docs/FINALIZATION_PLAN.md), [Jornada do produto](docs/PRODUCT_JOURNEY.md), [Arquitetura-alvo](docs/TARGET_ARCHITECTURE.md) e [Matriz de aceite](docs/ACCEPTANCE_MATRIX.md).
+A versão atual é **v0.7.0 (planejamento guiado, biblioteca visual versionada e revisão por shot)**: ainda não é gerador de episódios completo. A estratégia de conclusão e os critérios para declarar v1.0 estão documentados em [Plano de finalização](docs/FINALIZATION_PLAN.md), [Jornada do produto](docs/PRODUCT_JOURNEY.md), [Arquitetura-alvo](docs/TARGET_ARCHITECTURE.md) e [Matriz de aceite](docs/ACCEPTANCE_MATRIX.md).
 
 Para agentes, há uma [Skill de direção audiovisual](skills/visual-production-director/SKILL.md) que conduz a jornada usando ferramentas disponíveis e deixa explícitas as integrações ainda pendentes. Para implementar os próximos marcos, consulte o [Runbook](docs/IMPLEMENTATION_RUNBOOK.md) e [CONTRIBUTING.md](CONTRIBUTING.md). A documentação técnica está indexada em [docs/README.md](docs/README.md).
 
 **Regra de produto:** uma pessoa fornece a história e aprova as decisões essenciais; o MCP guarda progresso, evidências e próxima ação. O Flow real e a montagem final dependem de trabalhos técnicos ainda não homologados.
+
+## Integração com Google Flow (v0.7 / F3 parcial)
+
+A v0.7 traz `studio_flow_live_account`, `studio_flow_live_step`, `studio_flow_submit_step`, `studio_flow_reconcile_step` e `studio_flow_download_step`. Elas se conectam a um **MCP upstream previamente instalado e autenticado pelo operador**, sem senha ou cookie no nosso servidor. O suporte nesta bridge é **restrito a `image.generate` sem referências e `video.text` sem frames**, com verificação do perfil, workspace, modelos e schema. O job é submetido uma única vez após aprovação, e seu arquivo é arquivado com hash e verificação técnica. Não há quote de créditos verificada nem criação/clonagem de projeto. **Nenhuma geração live foi homologada nesta entrega.**
+
+Veja o [procedimento de conexão e operação F3](docs/FLOW_LIVE_BRIDGE.md) e [configuração de perfis de exemplo](examples/flow-profiles.example.json). O workflow completo da história ainda exige `asset.upload`, `video.frames` e composição, operações não suportadas por esta primeira bridge.
 
 ## Acompanhamento da produção (v0.5)
 
@@ -70,10 +76,10 @@ HISTÓRIA (texto / .txt / .md)
     │ cada etapa vinculada ao roteiro e à conta destino
     ▼
 5. GOOGLE FLOW [ADAPTADOR]   ← imagens de personagens e cenários
-    │ → frames das cenas → vídeos → composição opcional
+    │ → frames das cenas → vídeos → composição opcional (F3 parcial)
     ▼
 6. REVISÃO / ENTREGA         ← downloads, consistência e edição final
-       (integração e montagem automatizadas ainda pendentes)
+       (integração de frames/referências e montagem ainda pendentes)
 ```
 
 A pessoa permanece dona do roteiro e pode reutilizar a bíblia visual em novos episódios. Os projetos e IDs nativos de cada conta Google são **separados**; não há transferência de créditos nem clonagem mágica entre contas.
@@ -89,7 +95,7 @@ A pessoa permanece dona do roteiro e pode reutilizar a bíblia visual em novos e
 | Gerar `production.json`, `workflow.json`, storyboard e bíblia | **Implementado** | Compila arquivos determinísticos sem gastar créditos |
 | Planejar referências → imagens → vídeos | **Implementado** | DAG com dependências e IDs limitados a uma conta |
 | Descobrir schema de MCP upstream | **Implementado, se houver MCP configurado** | Testa disponibilidade da ferramenta e parâmetros, não login real |
-| Criar personagens, imagens ou vídeos no Flow | **Não homologado** | Requer adaptador real, autenticação, ferramentas existentes e aprovação |
+| Gerar imagem simples ou vídeo por texto no Flow | **Bridge F3 implementada; não homologada live** | Exige upstream autenticado, aprovação e capabilities reais; frames/referências ainda bloqueados |
 | Sincronizar referências entre contas | **Planejamento apenas** | Binding local; upload e hash remotos ainda não verificados |
 | Download e revisão de clipes gerados por workflow | **Manual/parcial** | Há ingestão verificada para jobs legados; não está integrado automaticamente à DAG |
 | Consultar 10 fases, próxima ação e eventos com retomada | **Implementado localmente** | Estado durável no StageEngine; não afirma que mídia remota foi validada |
@@ -400,3 +406,7 @@ Acompanhe [issues](https://github.com/kivervinicius/visual-production-mcp/issues
 Projeto independente, **não oficial** e sem afiliação com Google ou Higgsfield. Operações e disponibilidade mudam por modelo, plano, região e política do provedor. Não remova marcas de procedência nem colete senhas, cookies, tokens de sessão ou códigos de autenticação.
 
 **Licença:** MIT (código próprio). Estado, histórias, referências e mídias permanecem locais sob `.studio/` e não são enviados ao GitHub por padrão.
+
+## Atualização F3: fronteira entre simulação e conta real
+
+O teste automatizado do adaptador simula respostas de um MCP Flow existente. Antes de afirmar que foi gerado um vídeo ou imagem em Google Flow, exige-se execução autenticada, UUID do job, mídia local com hash e revisão. Confira o [guia de homologação F3](docs/FLOW_LIVE_BRIDGE.md).
