@@ -116,3 +116,7 @@ Para refatorar arquivos de `src/`, usar padrão *strangler*: extrair uma respons
 ## Definição de pronto de produto
 
 Não marcar v1.0 como finalizada antes de todos os cenários e evidências de [ACCEPTANCE_MATRIX.md](ACCEPTANCE_MATRIX.md), incluindo vídeo exportado real, revisão e recuperação. A apresentação de progresso deve mostrar `DONE`, `PLANNED`, `BLOCKED` e `UNVERIFIED` sem confundi-los.
+
+## Situação F2 (v0.6, branch de revisão)
+
+A biblioteca visual local agora suporta identidades imutáveis `libraryId@version`, imagens por SHA-256, aprovação/rejeição pelo operador, alternativas de still por shot, análise de impacto e reutilização de referências aprovadas no compilador. O `asset.upload` é planejado, e o ID remoto só é registrado após o operador conferir a conclusão. **Não houve homologação em conta Flow real**, nem garantia automática de fidelidade visual. Consulte [Biblioteca Visual](VISUAL_LIBRARY.md) e a issue [#12](https://github.com/kivervinicius/visual-production-mcp/issues/12). O gate F3 continua aberto.

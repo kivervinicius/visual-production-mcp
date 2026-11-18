@@ -36,3 +36,7 @@ Descrever de maneira estruturada: `baseline`, `escopo`, `arquivos alterados`, `c
 ## Política de pesquisa de dependências externas
 
 Usar as implementações públicas somente como referências candidatas até auditar licença, versões, manutenção e comportamento em sandbox: `BitraAI/ai-film-director` (processo), `leynos/visual-storytelling-skills` (personagens/continuidade), `XucroYuri/take` (Skill/MCP/CLI), `bakhtiarrifai/flow-studio` (storyboard local). Não incorporar código AGPL ou repositórios sem licença confirmada por simples cópia. Registrar decisão, versão e origem de qualquer código incorporado.
+
+## Implementando F2 (revisão local)
+
+O código foi adicionado incrementalmente em `src/application/library/visual-library.mjs`, sem refatorar em massa o armazenamento. Execute `npm test` para verificação da biblioteca, hashes, versões e análise de impacto. Depois de `studio_story_prepare`, uma imagem global aprovada é exportada como asset canônico e gerará `asset.upload`; o operador ainda precisa verificar o upload no Flow real e registrar o ID local da conta. Revisão de shot permanece no CLI, e a geração de vídeos reais pertence a F3. Consulte [Biblioteca Visual](VISUAL_LIBRARY.md).

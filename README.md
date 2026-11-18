@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml)
 
-**v0.5.0 (experimental) · MCP para transformar histórias em planos de produção audiovisual · Local-first · Google Flow como primeiro adaptador**
+**v0.6.0 (experimental) · MCP para transformar histórias em planos de produção audiovisual · Local-first · Google Flow como primeiro adaptador**
 
 > **Comece com uma história, não com um JSON.** O usuário conta sua história ou fornece um arquivo `.md`/`.txt`; seu agente de IA (Codex, Antigravity ou outro cliente MCP) conduz a preparação passo a passo. O MCP preserva a fonte, valida a rastreabilidade do material proposto, organiza personagens/cenários/cenas e compila prompts e tarefas para produzir imagens e vídeos no provedor conectado.
 >
@@ -10,7 +10,7 @@
 
 ## Plano de finalização e desenvolvimento
 
-A versão atual é **v0.5.0 (planejamento guiado com progresso e eventos)**: ainda não é gerador de episódios completo. A estratégia de conclusão e os critérios para declarar v1.0 estão documentados em [Plano de finalização](docs/FINALIZATION_PLAN.md), [Jornada do produto](docs/PRODUCT_JOURNEY.md), [Arquitetura-alvo](docs/TARGET_ARCHITECTURE.md) e [Matriz de aceite](docs/ACCEPTANCE_MATRIX.md).
+A versão atual é **v0.6.0 (planejamento guiado, biblioteca visual versionada e revisão por shot)**: ainda não é gerador de episódios completo. A estratégia de conclusão e os critérios para declarar v1.0 estão documentados em [Plano de finalização](docs/FINALIZATION_PLAN.md), [Jornada do produto](docs/PRODUCT_JOURNEY.md), [Arquitetura-alvo](docs/TARGET_ARCHITECTURE.md) e [Matriz de aceite](docs/ACCEPTANCE_MATRIX.md).
 
 Para agentes, há uma [Skill de direção audiovisual](skills/visual-production-director/SKILL.md) que conduz a jornada usando ferramentas disponíveis e deixa explícitas as integrações ainda pendentes. Para implementar os próximos marcos, consulte o [Runbook](docs/IMPLEMENTATION_RUNBOOK.md) e [CONTRIBUTING.md](CONTRIBUTING.md). A documentação técnica está indexada em [docs/README.md](docs/README.md).
 
@@ -36,6 +36,16 @@ npm run operator -- production-decision oficina-ep01 request_changes <reviewVers
 ```
 
 Esses comandos existem **somente no CLI do operador**, não como aprovação MCP pelo agente. A etapa `DELIVERY` permanece `PENDING` até existir vídeo final validado, capacidade ainda não implementada. Consulte o [contrato detalhado do StageEngine](docs/STAGE_ENGINE.md) e as [limitações atuais](docs/IMPLEMENTATION_GAPS.md).
+
+## Continuidade visual e reaproveitamento (v0.6 / F2)
+
+A biblioteca visual agora mantém **personagens, cenários, estilos e objetos** com `libraryId`, versão imutável, SHA-256 de imagens, origem declarada e aprovação do operador. O agente pode **propor** uma referência, mas não autoaprovar sua qualidade. Para consultar: `studio_visual_list`, `studio_visual_get` e `studio_visual_project_readiness`; para reaproveitar entre episódios, fixe `libraryId`/`libraryVersion` no elenco e cenário.
+
+Quando já houver uma versão aprovada que corresponde ao briefing, `studio_story_prepare` copia suas imagens para o pacote canônico e programa `asset.upload` para aquela conta Flow — **não recria a ficha visual**. O ID remoto permanece exclusivo da conta e deve ser verificado. O pacote não deixa de gerar os stills e vídeos de cenas; o Google Flow real ainda precisa de homologação.
+
+Para cada imagem de cena, use `studio_visual_shot_submit` e, depois, a revisão humana `visual-shot-review` no CLI. As variantes rejeitadas permanecem preservadas e apenas o plano necessário precisa ser refeito. `studio_visual_impact` indica o que seria afetado por uma nova versão global, sem executar regeneração.
+
+[**Tutorial detalhado da Biblioteca Visual**](docs/VISUAL_LIBRARY.md) — exemplos de JSON, aprovação de referência, revisão de shot, hashes, vínculo entre histórias e limitações de produção.
 
 ## 1. O que é — e o que o usuário precisa fornecer
 
@@ -84,6 +94,7 @@ A pessoa permanece dona do roteiro e pode reutilizar a bíblia visual em novos e
 | Download e revisão de clipes gerados por workflow | **Manual/parcial** | Há ingestão verificada para jobs legados; não está integrado automaticamente à DAG |
 | Consultar 10 fases, próxima ação e eventos com retomada | **Implementado localmente** | Estado durável no StageEngine; não afirma que mídia remota foi validada |
 | Renderizar episódio final (FFmpeg/áudio/legenda) | **Pendente** | Exporta ordem de montagem, não MP4 final |
+| Biblioteca visual reutilizável e revisão de still por shot | **Implementado localmente (v0.6)** | Versões, fingerprints, referências SHA-256, aprovação no CLI e impacto seletivo; upload real ainda pendente |
 | Higgsfield | **Arquitetura prevista** | Ainda não existe adaptador end-to-end verificado |
 
 O catálogo em `src/flow-operations.mjs` descreve **23 tipos de operações do produto Flow**; não significa que tenhamos 23 ações de navegador implementadas. Consulte [pendências](docs/IMPLEMENTATION_GAPS.md).

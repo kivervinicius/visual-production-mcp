@@ -61,3 +61,7 @@ Para o mesmo `productionId` exigir:
 - **v1.0:** episódio real entregue e fluxo guiado recuperável, com documentação de uso, falha, suporte e segurança.
 
 Referenciar cada critério nas issues/PRs; um item não verificado fica `PENDING` ou `BLOCKED`, jamais `DONE` apenas porque o documento existe.
+
+## Evidência parcial F2 (v0.6)
+
+Os testes locais de identidade, versionamento, aprovação visual, reutilização entre histórias, seleção de variante e atualização seletiva estão em `tests/visual-library.test.mjs`. O compilador evita regenerar uma imagem de personagem/local **quando a versão aprovada é compatível**. Isso comprova somente persistência e planejamento; o aceite de criação real no Flow, comparação visual de cenas e entrega MP4 continuam pendentes e não devem ser marcados completos por F2. Consulte [Biblioteca Visual](VISUAL_LIBRARY.md).

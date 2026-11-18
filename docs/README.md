@@ -13,3 +13,4 @@ Documentos atuais de engenharia (v0.4): [ARCHITECTURE.md](ARCHITECTURE.md), [ADA
 **Fonte de verdade para priorização nova:** `FINALIZATION_PLAN.md`. `ROADMAP.md`, `BACKLOG.md` e `IMPLEMENTATION_GAPS.md` registram o histórico técnico e não devem prevalecer sobre os gates mais recentes. Atualizar estes documentos ou arquivá-los em PR posterior para não manter roadmaps divergentes.
 
 - [StageEngine — fases, eventos e decisões (v0.5)](STAGE_ENGINE.md)
+- [Biblioteca visual F2 — personagens, cenários, estilos, aprovação e referências](VISUAL_LIBRARY.md)

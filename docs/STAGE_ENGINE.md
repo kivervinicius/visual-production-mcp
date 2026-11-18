@@ -75,3 +75,7 @@ Não confundir `status: submitted` do provider com arquivo importado. Se surgir 
 - F5: prova de episódio completo real e testes em Codex/Antigravity.
 
 A Skill do agente deve consultar o StageEngine ao início de toda sessão, explicar a etapa e o bloqueio em texto humano, e executar ações locais **não pagas** sem pedir permissão para cada operação. Gasto, aprovação criativa e reconciliação incerta permanecem sujeitos à decisão explícita do operador.
+
+## F2 — Biblioteca visual e eventos de aprovação
+
+Na v0.6, `production_get_status` inclui `visualContinuity`: recursos de personagem/cenário/estilo exigidos pelo elenco, versão aprovada localmente e o que ainda não foi registrado. Essa informação **não substitui** o status das operações remotas de `REFERENCES`. Eventos `visual_revision_proposed`, `visual_revision_decision`, `visual_shot_proposed` e `visual_shot_decision` podem ser recuperados pelo cursor de `production_events` depois de um `production_get_status` inicial. Consulte [Biblioteca visual](VISUAL_LIBRARY.md).
