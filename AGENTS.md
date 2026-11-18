@@ -68,3 +68,7 @@ Para uma conta Google Flow autorizada, prefira `studio_flow_live_account` e `stu
 - Render is an **operator-only CLI** action: `npm run operator -- render <RENDER_INPUTS.json>`. Do not call FFmpeg through generic shell tools in place of the validated contract unless the operator explicitly requests manual troubleshooting.
 - `PREVIEW_RENDERED` proves a technically inspected local MP4, **not** editorial approval, Google Flow generation, or final DELIVERY.
 - Never change an approved shot duration or map IDs from other projects to force a successful render; create new versions and request editorial approval instead.
+
+## v0.8.1: selecting completed Flow videos for local render
+
+Use `production_render_flow_link_plan` for read-only matching of archived provider jobs to an approved `video-*` storyboard slot. The agent must never select or approve footage itself: present the original and hashes to the operator. Only CLI `render-flow-attach <workflowId> <stepId> <packageDir> <clipSha256> <mappingSha256>` changes the render mapping. Keep all earlier mapping revisions and media immutable; run `render-plan` and `render` afterward. A completed provider job is **not** editorial approval. Read [FLOW_TO_RENDER.md](docs/FLOW_TO_RENDER.md).

@@ -18,3 +18,5 @@ Documentos atuais de engenharia (v0.4): [ARCHITECTURE.md](ARCHITECTURE.md), [ADA
 - [Bridge Google Flow F3 — conta, geração simples, reconciliação e limites](FLOW_LIVE_BRIDGE.md)
 
 - [Media Composer v0.8 — preview MP4 local, áudio, legendas, FFmpeg e QC](MEDIA_COMPOSER.md)
+
+- [Google Flow → Media Composer](FLOW_TO_RENDER.md) — validação do job original, associação com plano e seleção do operador (v0.8.1).

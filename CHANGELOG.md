@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.1 — Flow archive → Media Composer (local bridge)
+
+- Added read-only `production_render_flow_link_plan` for an existing completed Flow video with a content-addressed local receipt, verified job/account/story/shot, expected duration and ratio.
+- Added operator-only `render-flow-plan` and `render-flow-attach`; selecting a clip preserves the original, existing variants and previous mapping revision, and atomically updates only the corresponding render slot.
+- Render fingerprints and QC/RENDER manifests retain declared Flow job/asset provenance without equating technical completion with editorial approval.
+- Added 8 tests with real MP4 inputs; no Google credentials, paid generation, or frames-mode support claimed.
+
+
 ## 0.8.0 — F4 Media Composer (local preview)
 
 - Added an isolated FFmpeg/FFprobe renderer that consumes canonical `EDIT_MANIFEST.json` + `production.json` and explicit `RENDER_INPUTS.json`, supporting source images with micro-motions or local video clips.

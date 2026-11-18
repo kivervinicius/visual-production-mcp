@@ -2,15 +2,15 @@
 
 [![CI](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml)
 
-**v0.7.0 F3-piloto (experimental) · MCP para transformar histórias em planos de produção audiovisual · Local-first · Google Flow como primeiro adaptador**
+**v0.8.1 — Media Composer com associação Flow (experimental) · MCP para transformar histórias em planos de produção audiovisual · Local-first · Google Flow como primeiro adaptador**
 
 > **Comece com uma história, não com um JSON.** O usuário conta sua história ou fornece um arquivo `.md`/`.txt`; seu agente de IA (Codex, Antigravity ou outro cliente MCP) conduz a preparação passo a passo. O MCP preserva a fonte, valida a rastreabilidade do material proposto, organiza personagens/cenários/cenas e compila prompts e tarefas para produzir imagens e vídeos no provedor conectado.
 >
-> **Limite importante:** hoje o percurso **história → bíblia visual → storyboard → manifestos/workflow** funciona localmente e é testado. Há agora uma bridge de conta Flow com pré-verificação, geração simples de imagem ou vídeo por texto e reconciliação de arquivos — **implementada, mas ainda não homologada com uma conta real**. Frames, ingredientes, personagens nativos e a edição final permanecem pendentes. Não confunda *plano de produção* com *mídia gerada*.
+> **Limite importante:** hoje o percurso **história → bíblia visual → storyboard → manifestos/workflow** funciona localmente e é testado. Há agora uma bridge de conta Flow com pré-verificação, geração simples de imagem ou vídeo por texto e reconciliação de arquivos — **implementada, mas ainda não homologada com uma conta real**. Frames, ingredientes, personagens nativos e aprovação da entrega final permanecem pendentes. Já é possível renderizar um MP4 técnico local com mídia existente. Não confunda *plano de produção* com *mídia gerada*.
 
 ## Plano de finalização e desenvolvimento
 
-A versão atual é **v0.7.0 (planejamento guiado, biblioteca visual versionada e revisão por shot)**: ainda não é gerador de episódios completo. A estratégia de conclusão e os critérios para declarar v1.0 estão documentados em [Plano de finalização](docs/FINALIZATION_PLAN.md), [Jornada do produto](docs/PRODUCT_JOURNEY.md), [Arquitetura-alvo](docs/TARGET_ARCHITECTURE.md) e [Matriz de aceite](docs/ACCEPTANCE_MATRIX.md).
+A versão atual é **v0.8.1 (planejamento guiado, biblioteca visual, Media Composer e associação local com arquivos Flow já verificados)**: ainda não é gerador de episódios completo. A estratégia de conclusão e os critérios para declarar v1.0 estão documentados em [Plano de finalização](docs/FINALIZATION_PLAN.md), [Jornada do produto](docs/PRODUCT_JOURNEY.md), [Arquitetura-alvo](docs/TARGET_ARCHITECTURE.md) e [Matriz de aceite](docs/ACCEPTANCE_MATRIX.md).
 
 Para agentes, há uma [Skill de direção audiovisual](skills/visual-production-director/SKILL.md) que conduz a jornada usando ferramentas disponíveis e deixa explícitas as integrações ainda pendentes. Para implementar os próximos marcos, consulte o [Runbook](docs/IMPLEMENTATION_RUNBOOK.md) e [CONTRIBUTING.md](CONTRIBUTING.md). A documentação técnica está indexada em [docs/README.md](docs/README.md).
 
@@ -66,9 +66,24 @@ npm run operator -- render-plan '/caminho/.studio/stories/ep01/offline-render/RE
 npm run operator -- render '/caminho/.studio/stories/ep01/offline-render/RENDER_INPUTS.json'
 ```
 
-As ferramentas MCP `production_render_story_plan`, `production_render_template` e `production_render_plan` são **somente leitura**; a codificação fica restrita à CLI do operador. A pasta de saída `rendered/<fingerprint>/` contém `final.mp4`, `QC_REPORT.json`, `RENDER_MANIFEST.json` e, se houver legendas, `subtitles.srt`. O MP4 pode conter faixa AAC e legendas `mov_text`. **Status final desta etapa: `PREVIEW_RENDERED`, nunca `DELIVERY COMPLETED` automaticamente.**
+As ferramentas MCP `production_render_story_plan`, `production_render_template`, `production_render_plan` e `production_render_flow_link_plan` são **somente leitura**; a codificação fica restrita à CLI do operador. A pasta de saída `rendered/<fingerprint>/` contém `final.mp4`, `QC_REPORT.json`, `RENDER_MANIFEST.json` e, se houver legendas, `subtitles.srt`. O MP4 pode conter faixa AAC e legendas `mov_text`. **Status final desta etapa: `PREVIEW_RENDERED`, nunca `DELIVERY COMPLETED` automaticamente.**
 
 [Contrato e procedimento completos do Media Composer](docs/MEDIA_COMPOSER.md).
+
+### Selecionar vídeos já produzidos pelo Flow (v0.8.1)
+
+Quando um workflow aprovado tiver um vídeo realmente **baixado e arquivado com SHA-256**, o MCP pode conferir a correspondência desse original com um plano do storyboard. O agente consulta `production_render_flow_link_plan`; a escolha da mídia é exclusiva do operador no CLI:
+
+```bash
+npm run operator -- render-flow-plan <workflowId> <videoStepId> <packageDir>
+# Leia o sha256 e mappingSha256 mostrados acima; assista ao original.
+npm run operator -- render-flow-attach <workflowId> <videoStepId> <packageDir> <sha256> <mappingSha256>
+npm run operator -- render-plan <packageDir>/RENDER_INPUTS.json
+npm run operator -- render <packageDir>/RENDER_INPUTS.json
+```
+
+Essa associação preserva os vídeos e mapeamentos anteriores, impede alterações silenciosas de duração/conta/história e transporta a proveniência ao relatório do render. **Não realiza geração, download ou aprovação editorial**. Como a bridge atual ainda não executa `video.frames`, um episódio autenticado completo segue pendente. Veja [Flow → Media Composer](docs/FLOW_TO_RENDER.md).
+
 
 ## 1. O que é — e o que o usuário precisa fornecer
 
@@ -96,7 +111,7 @@ HISTÓRIA (texto / .txt / .md)
     │ → frames das cenas → vídeos → composição opcional (F3 parcial)
     ▼
 6. REVISÃO / ENTREGA         ← downloads, consistência e edição final
-       (integração de frames/referências e montagem ainda pendentes)
+       (montagem local implementada; frames/referências Flow e entrega editorial ainda pendentes)
 ```
 
 A pessoa permanece dona do roteiro e pode reutilizar a bíblia visual em novos episódios. Os projetos e IDs nativos de cada conta Google são **separados**; não há transferência de créditos nem clonagem mágica entre contas.

@@ -29,7 +29,7 @@ Aprovação editorial e de custos permanece **exclusiva do operador local**: `np
 6. **Preparação.** Selecione somente conta autorizada, consulte capabilities reais quando suportado, e compile o pacote com `studio_story_prepare`. Confira `CHARACTER_BIBLE.md`, `STORYBOARD.md`, `production.json`, `workflow.json` e `EDIT_MANIFEST.json`.
 7. **Referências e imagens.** Planeje o trabalho na ordem das dependências. Antes de gerar mídia, confirme que referências e parâmetros são aceitos pelo adaptador (`studio_workflow_inspect_step`). Se o recurso não estiver homologado, anuncie `BLOCKED` e a ação concreta para integrar o upstream.
 8. **Vídeos.** Para cada plano aprovado, obtenha quote real, autorização e somente então `studio_workflow_execute_step`. Uma resposta de formulário preparado não é geração concluída. Reconciliar resultado incerto antes de qualquer retry.
-9. **Revisão e entrega.** Verifique arquivos originais, continuidade, qualidade técnica, áudio, legendas e montagem. Só declare vídeo entregue após existência de arquivo, hashes, QC e aprovação. A v0.5 ainda NÃO automatiza a montagem final.
+9. **Revisão e entrega.** Verifique arquivos originais, continuidade, qualidade técnica, áudio, legendas e montagem. Só declare vídeo entregue após existência de arquivo, hashes, QC e aprovação. A v0.8 inclui montagem técnica local por FFmpeg, mas não finaliza a revisão editorial nem a publicação.
 
 ## Formato obrigatório para cada atualização
 
@@ -66,3 +66,7 @@ Se o usuário possuir uma sessão MCP do Google Flow conectada pelo operador, us
 ## Media Composer v0.8 — montagem local
 
 Para um animatic **sem conta Flow**, após aprovação editorial use `production_render_story_plan(storyId)` e oriente o operador a rodar `npm run operator -- render-export <storyId>`. O comando cria `EDIT_MANIFEST.json` e `production.json` locais sem se conectar a serviços externos. Depois, use `production_render_template(packageDir)` para apresentar ao usuário os slots de planos e `production_render_plan(manifestPath)` para indicar quais imagens/clipes ainda faltam. Não invente mídia nem substitua silenciosamente duração/ordem do roteiro. O operador pode criar o arquivo inicial e renderizar com `npm run operator -- render-init <packageDir>` e `npm run operator -- render <RENDER_INPUTS.json>`. **Não há ferramenta MCP de renderização automática**: o processo codificador executa apenas no CLI do operador. Uma saída `PREVIEW_RENDERED` exige revisão do editor antes de considerar um episódio finalizado. Consulte `docs/MEDIA_COMPOSER.md`.
+
+## Associar original Flow a um plano local (v0.8.1)
+
+Quando houver `completed` e recibo com arquivo original SHA-256 de um job Flow, chame `production_render_flow_link_plan` informando `workflowId`, `stepId` e `packageDir`. Exiba o clipe original para decisão do operador; se o original não estiver acessível, não afirme que foi revisado. O operador executa `npm run operator -- render-flow-attach <workflowId> <stepId> <packageDir> <sha256> <mappingSha256>`. A escolha não é feita pelo agente. Depois verifique `production_render_plan` e informe que o operador pode executar `render`. Arquivos/variantes anteriores permanecem intocados. A bridge F3 ainda não suporta `video.frames` na conta real: não prometa um episódio Flow completo. Consulte [FLOW_TO_RENDER.md](../../docs/FLOW_TO_RENDER.md).

@@ -119,7 +119,7 @@ async function inspectRenderConfig(manifestPath) {
     const tech=await probe(item.file);
     assert(tech.video && Number(tech.video.width)>0 && Number(tech.video.height)>0,`${v.stepId}: unreadable image/video`);
     if(v.kind==='video')assert(tech.durationSeconds + 0.08 >= duration,`${v.stepId}: clip shorter than storyboard; trimming cannot add missing action`);
-    shots.push({stepId:v.stepId,sceneId:expected[i].sceneId,kind:v.kind,file:item.file,path:relative,sha256:digest,bytes:item.bytes,durationSeconds:duration,frames,motion});
+    shots.push({stepId:v.stepId,sceneId:expected[i].sceneId,kind:v.kind,file:item.file,path:relative,sha256:digest,bytes:item.bytes,durationSeconds:duration,frames,motion,source:v.source||null});
   }
   const durationSeconds=totalFrames/fps;
   const subs=spec.subtitles??[];
@@ -143,7 +143,7 @@ async function inspectRenderConfig(manifestPath) {
     audio={file:entry.file,path:rel,sha256:await sha256(entry.file),bytes:entry.bytes};
     if(spec.audio.sha256!==undefined)assert(spec.audio.sha256===audio.sha256,'audio SHA-256 mismatch');
   }
-  const fingerprint=stableHash({renderSchemaVersion:1,productionId,sourceSha256:edit.sourceSha256,editSha256:await sha256(editFile.file),productionSha256:await sha256(productionFile.file),width:spec.width,height:spec.height,fps,shots:shots.map(({stepId,sceneId,kind,path,sha256,durationSeconds,motion})=>({stepId,sceneId,kind,path,sha256,durationSeconds,motion})),audio:audio&&{path:audio.path,sha256:audio.sha256},subtitles});
+  const fingerprint=stableHash({renderSchemaVersion:1,productionId,sourceSha256:edit.sourceSha256,editSha256:await sha256(editFile.file),productionSha256:await sha256(productionFile.file),width:spec.width,height:spec.height,fps,shots:shots.map(({stepId,sceneId,kind,path,sha256,durationSeconds,motion,source})=>({stepId,sceneId,kind,path,sha256,durationSeconds,motion,...(source?{source}:{})})),audio:audio&&{path:audio.path,sha256:audio.sha256},subtitles});
   return {base,manifest,productionId,width:spec.width,height:spec.height,fps,aspectRatio:edit.aspectRatio,sourceSha256:edit.sourceSha256,durationSeconds,totalFrames,shots,audio,subtitles,fingerprint};
 }
 
@@ -273,7 +273,7 @@ export async function renderMedia(manifestPath) {
     assert(Math.abs(tech.durationSeconds-p.durationSeconds)<=0.15,'Final video duration mismatch');
     assert(Boolean(tech.audio)===Boolean(p.audio),'Final audio-track mismatch');
     assert(Boolean(tech.subtitles)===Boolean(p.subtitles.length),'Final subtitle-track mismatch');
-    const result={schemaVersion:1,status:'PREVIEW_RENDERED',productionId:p.productionId,sourceSha256:p.sourceSha256,renderFingerprint:p.fingerprint,verifiedAt:new Date().toISOString(),technical:{durationSeconds:tech.durationSeconds,width:tech.video.width,height:tech.video.height,fps:p.fps,codec:tech.video.codec_name,hasAudio:!!tech.audio,hasEmbeddedSubtitles:!!tech.subtitles},inputs:p.shots.map(s=>({stepId:s.stepId,sceneId:s.sceneId,sha256:s.sha256,durationSeconds:s.durationSeconds,kind:s.kind,motion:s.motion})),output:{path:'final.mp4',sha256:await sha256(out),bytes:(await fs.stat(out)).size},subtitles:p.subtitles.length?{path:'subtitles.srt',sha256:await sha256(path.join(working,'subtitles.srt'))}:null,notes:['Local technical preview only; no editorial approval or real Flow generation is implied','Generation costs are not measured by the Media Composer']};
+    const result={schemaVersion:1,status:'PREVIEW_RENDERED',productionId:p.productionId,sourceSha256:p.sourceSha256,renderFingerprint:p.fingerprint,verifiedAt:new Date().toISOString(),technical:{durationSeconds:tech.durationSeconds,width:tech.video.width,height:tech.video.height,fps:p.fps,codec:tech.video.codec_name,hasAudio:!!tech.audio,hasEmbeddedSubtitles:!!tech.subtitles},inputs:p.shots.map(s=>({stepId:s.stepId,sceneId:s.sceneId,sha256:s.sha256,durationSeconds:s.durationSeconds,kind:s.kind,motion:s.motion,...(s.source?{source:s.source}:{})})),output:{path:'final.mp4',sha256:await sha256(out),bytes:(await fs.stat(out)).size},subtitles:p.subtitles.length?{path:'subtitles.srt',sha256:await sha256(path.join(working,'subtitles.srt'))}:null,notes:['Local technical preview only; no editorial approval or real Flow generation is implied','Generation costs are not measured by the Media Composer']};
     await fs.writeFile(path.join(working,'QC_REPORT.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});
     await fs.writeFile(path.join(working,'RENDER_MANIFEST.json'),JSON.stringify({productionId:p.productionId,renderFingerprint:p.fingerprint,sourceSha256:p.sourceSha256,inputs:result.inputs,audio:p.audio&&{sha256:p.audio.sha256,path:p.audio.path},subtitles:p.subtitles},null,2)+'\n',{mode:0o600});
     await fs.rename(working,target);

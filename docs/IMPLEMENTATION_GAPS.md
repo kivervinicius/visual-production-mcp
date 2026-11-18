@@ -101,3 +101,7 @@ O adaptador `src/providers/google-flow/miyakejima.mjs` implementa inspeção liv
 ## Atualização F4 / v0.8 (Media Composer local)
 
 O Media Composer já transforma imagens/clipes locais explicitamente associados aos IDs dos planos do StoryGuide em **MP4 real**, com movimentos discretos, áudio e legendas opcionais. Inclui verificações FFprobe, SHA-256 e arquivo de QC. Não existe, porém, integração automática dos downloads Flow com o mapeamento local, aprovação criativa final, fila durável de render ou QC avançado (silêncio/falhas visuais). O produto permanece em preview técnico, não release v1.0. Consulte [MEDIA_COMPOSER.md](MEDIA_COMPOSER.md).
+
+## Atualização v0.8.1 — Flow original → render local
+
+Uma bridge local agora correlaciona um vídeo arquivado pelo F3 a um `video-*` do StoryGuide e permite sua seleção manual na timeline, com hash e preservação das revisões. É uma etapa *offline* e não comprova `video.frames` real, upload de referências, projeto nativo verificado, quote de créditos ou QA editorial. Consulte [FLOW_TO_RENDER.md](FLOW_TO_RENDER.md).

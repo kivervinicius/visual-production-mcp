@@ -125,3 +125,7 @@ npm run test:mcp         # Smoke MCP; requer dependências npm instaladas
 4. Sem aprovação visual/áudio do MP4 e sem sinalizar `DELIVERY` como editorialmente concluído no StageEngine.
 5. Sem fila de renderização distribuída, cache de segmentos por shot ou cancelamento via painel.
 6. Não adicione o vídeo/áudio real a um repositório público sem conferir direitos, privacidade e licenças.
+
+## Integração com vídeos reais já baixados (v0.8.1)
+
+Use o guia [FLOW_TO_RENDER.md](FLOW_TO_RENDER.md) para selecionar vídeos originais do Flow por job e SHA-256, sem sobrescrever variantes. A seleção é feita somente no CLI local, após inspeção do original pelo operador. O Media Composer inclui `source` como metadado de proveniência dos slots selecionados; ele não valida aprovação criativa automaticamente nem assina criptograficamente o recibo.
