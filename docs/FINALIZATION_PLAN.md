@@ -42,6 +42,8 @@ A primeira entrega de produto (v1.0) deve funcionar **com uma única conta Googl
 
 ### F1 — jornada guiada e retomada independente do agente (v0.5)
 
+**Entrega parcial implementada no PR F1:** projeção das dez fases, próximo passo, eventos com cursor, retomada e aprovação editorial versionada. A travessia simulada até MP4 final permanece PENDENTE de F3/F4: não declarar gate F1 totalmente verificado até testar workflow offline completo com ativos físicos.
+
 **Implementar:** núcleo de fases `STORY → DIRECTING → BIBLE → STORYBOARD → REFERENCES → SHOT_IMAGES → VIDEOS → REVIEW → AUDIO_EDIT → DELIVERY`, com `GET_STATUS`, `GET_NEXT_ACTION` e `SUBMIT_DECISION`. Cada etapa retorna artefatos esperados, bloqueios, aprovações e estimativa de esforço/custo. `AWAITING_APPROVAL`, `BLOCKED` e `FAILED` não avançam automaticamente. Criar histórico de decisões e revisões; permitir retomar com outro cliente MCP.
 
 **UX:** perguntar apenas o indispensável (formato/duração/estilo se não puder inferir, aprovação editorial, aprovação de referência, crédito, seleção final). Para cada fase, oferecer resumo claro, próximas ações e prévia. Uma passagem que termina em `awaiting_approval` é resultado normal, não erro.

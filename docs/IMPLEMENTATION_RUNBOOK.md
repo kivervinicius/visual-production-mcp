@@ -19,7 +19,7 @@
 
 | Ticket | Dependência | Implementação mínima |
 |---|---|---|
-| T01 StageEngine / NextAction | PR de planejamento | Modelo de fases + eventos + `nextAction` persistente e read-only |
+| T01 StageEngine / NextAction | PR de planejamento | **Parcialmente implementado na v0.5**: 10 fases, eventos, nextAction e decisões versionadas. E2E offline com MP4 ainda pendente |
 | T02 Skill de direção | T01 | Contrato de conversação, retomada, aprovações, parâmetros do MCP reais |
 | T03 Biblioteca e continuidade | T01 | Versões de personagem/estilo/referências, aprovação e invalidação de dependências |
 | T04 Flow capability/session worker | T03 e #1 | uma conta, inspeção live, upload de ref e imagem real |

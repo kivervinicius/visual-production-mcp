@@ -4,7 +4,7 @@
 
 Uma pessoa não precisa escrever JSON nem escolher ferramentas MCP. Ela entrega uma história; o agente explica o plano, faz perguntas só quando falta um dado essencial, prepara artefatos, atualiza o progresso e apresenta decisões aprováveis. O backend mantém as fases e as evidências; trocar de agente não reinicia a produção.
 
-## Fluxo pretendido (não está todo implementado na v0.4)
+## Fluxo pretendido (não está todo implementado na v0.5)
 
 | Fase | Ação automática do agente | O que mostrar ao usuário | Gate para avançar |
 |---|---|---|---|
@@ -19,11 +19,11 @@ Uma pessoa não precisa escrever JSON nem escolher ferramentas MCP. Ela entrega 
 | 9. Pós-produção | Áudio, legendas, timeline e FFmpeg | Preview do episódio, trilhas, direitos e duração | Aprovação editorial da versão de entrega |
 | 10. Entrega | Validar codecs, dimensões, legendas e hashes | MP4, projeto portátil e relatório de execução | `DELIVERED` só com evidências presentes |
 
-Na v0.4, as fases 1–4 são **planejamento assistido** e geram manifests; as demais não estão automatizadas ponta a ponta.
+Na v0.5, as fases 1–4 são **planejamento assistido** e geram manifests; as demais não estão automatizadas ponta a ponta.
 
 ## Contrato de UX para próxima ação
 
-**Proposta v0.5** (`production_get_status` e `production_get_next_action`, nomes a aprovar no código):
+**Contrato implementado na v0.5** (`production_get_status`, `production_get_next_action` e `production_events`; exemplo ilustrativo simplificado):
 
 ```json
 {
@@ -45,7 +45,7 @@ Na v0.4, as fases 1–4 são **planejamento assistido** e geram manifests; as de
 }
 ```
 
-Esse JSON é **design de contrato**, não retorno atual da ferramenta. Não declarar valores inventados como orçamento live. Progresso exibido como `4/10 fases validadas` em vez de 40% de render real; para jobs usar estados e timestamps observados.
+Os campos listados são **ilustrativos**, não um snapshot literal do retorno da ferramenta. Veja o contrato efetivo em [STAGE_ENGINE.md](STAGE_ENGINE.md). Não declarar valores inventados como orçamento live. Progresso exibido como `4/10 fases validadas` em vez de 40% de render real; para jobs usar estados e timestamps observados.
 
 ## Estados e ações humanas
 

@@ -4,6 +4,12 @@
 
 Leia primeiro [docs/FINALIZATION_PLAN.md](docs/FINALIZATION_PLAN.md), [docs/TARGET_ARCHITECTURE.md](docs/TARGET_ARCHITECTURE.md), [docs/PRODUCT_JOURNEY.md](docs/PRODUCT_JOURNEY.md), [docs/ACCEPTANCE_MATRIX.md](docs/ACCEPTANCE_MATRIX.md) e [docs/IMPLEMENTATION_RUNBOOK.md](docs/IMPLEMENTATION_RUNBOOK.md). Para produção guiada, utilize a [Skill visual-production-director](skills/visual-production-director/SKILL.md), quando o cliente suportar Skills; caso contrário siga este arquivo. O núcleo MCP, não a Skill, persistirá o estado e decidirá a próxima etapa. **Não marque proposta de contrato como ferramenta já implementada.**
 
+## Guided progress on every new session (v0.5)
+
+**Always consult `production_get_status` and `production_get_next_action`** for a known story before acting on the user's "continue". Use `production_events` with a saved cursor to report only new events and avoid duplicate warnings. The StageEngine uses ten phases and distinguishes `DRAFT_READY`, `AWAITING_APPROVAL`, `BLOCKED`, and `AWAITING_VERIFICATION` from completed work. Provider-reported completion does not prove a validated local asset or final movie. Read [StageEngine](docs/STAGE_ENGINE.md).
+
+Editorial approval uses the operator-only `production-decision` CLI and a real `reviewVersion` SHA-256 from status. Never call shell commands to autoapprove on behalf of an agent. The legacy `story-approve` command remains for compatibility, but cannot override a rejected identical draft.
+
 ## When the user provides only a story
 
 **Do not require the user to learn JSON, prompts, shot lists, model names or accounts.** Guide them with these seven MCP tools in this order:

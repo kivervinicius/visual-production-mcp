@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 — durable stage guidance (issue #11)
+
+- Added a ten-stage StageEngine with persisted evidence-derived status, a single actionable next step, and cursor-based incremental events.
+- Added three read-only MCP tools: `production_get_status`, `production_get_next_action`, `production_events`.
+- Added operator-only editorial decisions with exact draft SHA-256 version checks and the ability to request revisions without implicit approvals.
+- Preserved legacy story and workflow APIs; prevented legacy editorial approval of an explicitly rejected unchanged draft.
+- Added restart/resume, idempotent event, uncertain provider response, and unverified-media tests. **No real video generation or final assembly is claimed**.
+
+
 ## Unreleased — finalization planning and documentation
 
 - Added a concrete v1.0 delivery roadmap, product journey, target architecture, acceptance matrix, implementation runbook, contributing guide and documentation index.
@@ -29,6 +38,15 @@
 - **Not yet validated against authenticated Flow or Higgsfield accounts; no credits used.**
 
 # Changelog
+
+## 0.5.0 — durable stage guidance (issue #11)
+
+- Added a ten-stage StageEngine with persisted evidence-derived status, a single actionable next step, and cursor-based incremental events.
+- Added three read-only MCP tools: `production_get_status`, `production_get_next_action`, `production_events`.
+- Added operator-only editorial decisions with exact draft SHA-256 version checks and the ability to request revisions without implicit approvals.
+- Preserved legacy story and workflow APIs; prevented legacy editorial approval of an explicitly rejected unchanged draft.
+- Added restart/resume, idempotent event, uncertain provider response, and unverified-media tests. **No real video generation or final assembly is claimed**.
+
 
 ## 0.2.0 — production metadata and media integrity
 

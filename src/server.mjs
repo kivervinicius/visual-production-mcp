@@ -8,13 +8,15 @@ import { ingestResult } from './media.mjs';
 import { preflight } from './preflight.mjs';
 import { WorkflowStudio } from './workflows.mjs';
 import { StoryGuide } from './story-guide.mjs';
+import { StageEngine } from './application/guide/stage-engine.mjs';
 import { listFlowOperations } from './flow-operations.mjs';
 import { inspectWorkflowStep, executeWorkflowStep } from './workflow-adapter.mjs';
 
 const studio = new Studio();
 const workflows = new WorkflowStudio(studio);
 const storyGuide = new StoryGuide(studio);
-const server = new McpServer({ name: 'visual-production-mcp', version: '0.4.0' });
+const stageEngine = new StageEngine(studio);
+const server = new McpServer({ name: 'visual-production-mcp', version: '0.5.0' });
 const result = x => ({ content: [{ type: 'text', text: JSON.stringify(x, null, 2) }] });
 const tool = (name, description, inputSchema, action) => server.registerTool(name, { description, inputSchema: z.object(inputSchema) }, async args => {
   try { return result(await action(args)); }
@@ -77,5 +79,16 @@ tool('studio_story_submit_storyboard','Submit source-anchored ordered scenes and
 tool('studio_story_prepare','Only after OPERATOR editorial approval and registered account: compile canonical manifest, character bible, detailed storyboard and account-local image->video workflow; no provider calls or charges.',{
   storyId:id,accountId:id,videoEstimatedCredits:z.number().int().positive(),imageEstimatedCredits:z.number().int().nonnegative().optional(),includeCharacterCreation:z.boolean().optional(),includeSceneCompose:z.boolean().optional()
 },args=>storyGuide.prepare(args));
+
+// Phase/state tools only read and reconcile local evidence. Human approval remains CLI-only.
+tool('production_get_status','Return durable 10-stage production progress, evidence levels, human approval gates, blockers and current next action. No provider spending.',{
+  storyId:id
+},({storyId})=>stageEngine.status(storyId));
+tool('production_get_next_action','Get one actionable next step for the selected story without replaying the full chat; ID is stable for retries.',{
+  storyId:id
+},({storyId})=>stageEngine.next(storyId));
+tool('production_events','Poll ordered local stage and decision events since a cursor. No background notification channel is implied.',{
+  storyId:id,cursor:z.number().int().nonnegative().optional(),limit:z.number().int().min(1).max(100).optional()
+},({storyId,cursor,limit})=>stageEngine.events(storyId,{cursor,limit}));
 
 await server.connect(new StdioServerTransport());
