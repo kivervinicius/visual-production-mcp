@@ -10,5 +10,6 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npm run check
+      - run: npm run docs:check
       - run: npm test
       - run: npm run test:mcp

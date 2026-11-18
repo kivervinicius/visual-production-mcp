@@ -8,6 +8,14 @@
 >
 > **Limite importante:** hoje o percurso **história → bíblia visual → storyboard → manifestos/workflow** funciona localmente e é testado. O percurso **workflow → geração real no Google Flow → download → edição final** ainda precisa de um adaptador autenticado e homologado. Não confunda *plano de produção* com *mídia gerada*.
 
+## Plano de finalização e desenvolvimento
+
+A versão atual é **v0.4.0 (planejamento guiado)**: ainda não é gerador de episódios completo. A estratégia de conclusão e os critérios para declarar v1.0 estão documentados em [Plano de finalização](docs/FINALIZATION_PLAN.md), [Jornada do produto](docs/PRODUCT_JOURNEY.md), [Arquitetura-alvo](docs/TARGET_ARCHITECTURE.md) e [Matriz de aceite](docs/ACCEPTANCE_MATRIX.md).
+
+Para agentes, há uma [Skill de direção audiovisual](skills/visual-production-director/SKILL.md) que conduz a jornada usando ferramentas disponíveis e deixa explícitas as integrações ainda pendentes. Para implementar os próximos marcos, consulte o [Runbook](docs/IMPLEMENTATION_RUNBOOK.md) e [CONTRIBUTING.md](CONTRIBUTING.md). A documentação técnica está indexada em [docs/README.md](docs/README.md).
+
+**Regra de produto:** uma pessoa fornece a história e aprova as decisões essenciais; o MCP guarda progresso, evidências e próxima ação. O Flow real e a montagem final dependem de trabalhos técnicos ainda não homologados.
+
 ## 1. O que é — e o que o usuário precisa fornecer
 
 A experiência pretendida é: **“Aqui está minha história. Ajude-me a transformá-la em um vídeo completo.”** Não é necessário começar sabendo programar, listar cenas, escolher um modelo Veo ou preencher um manifesto.
