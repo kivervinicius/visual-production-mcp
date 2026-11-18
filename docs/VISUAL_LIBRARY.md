@@ -63,7 +63,7 @@ No envio de elenco para `studio_story_submit_cast`, use o identificador global e
 }
 ```
 
-`sourceExcerpt` deve ser citação **literal** do roteiro recebido. `designPrompt` deve coincidir exatamente com a descrição aprovada da versão pinada; se divergir, `studio_story_prepare` falha em vez de alterar a aparência de maneira silenciosa. O mesmo contrato `libraryId`/`libraryVersion` existe para `locations`. Uma história também pode declarar `styleLibraryId`; esse vínculo atualmente permite análise de impacto e rastreabilidade, não injeta imagens de estilo na geração.
+Se a biblioteca já possui uma versão aprovada e o elenco declara `libraryId`, o `libraryVersion` é **obrigatório** para impedir que uma aprovação posterior altere a imagem selecionada sem reaprovação. `sourceExcerpt` deve ser citação **literal** do roteiro recebido. `designPrompt` deve coincidir exatamente com a descrição aprovada da versão pinada; se divergir, `studio_story_prepare` falha em vez de alterar a aparência de maneira silenciosa. O mesmo contrato `libraryId`/`libraryVersion` existe para `locations`. Uma história também pode declarar `styleLibraryId`; esse vínculo atualmente permite análise de impacto e rastreabilidade, não injeta imagens de estilo na geração.
 
 No preparo da produção, uma referência aprovada é incluída no pacote de mídia com SHA-256 e gera uma etapa `asset.upload` **em vez de gerar uma nova imagem de personagem/local**. A tomada usa `referenceImages: ["asset:<id>"]` e aguarda dependências de upload da mesma conta. Um novo projeto Google continua precisando do upload da referência, com ID remoto próprio. O compilador rejeita mais de cinco referências numa tomada, não as descarta silenciosamente; o limite real deve ser verificado no Flow.
 
