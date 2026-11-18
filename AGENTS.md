@@ -76,3 +76,7 @@ Use `production_render_flow_link_plan` for read-only matching of archived provid
 ### Reference-aware frame preflight (v0.8.2)
 
 For a `video.frames`/`video.ingredients` step, call `studio_gflow_frame_plan` before suggesting any provider execution. The result pins local image bytes and SHA-256, account, mode, project and model. When `paidExecutionImplemented` is false, STOP: never switch to text-to-video, never use the arguments preview as an authorization for charged generation. See [GFLOW_FRAMES.md](docs/GFLOW_FRAMES.md).
+
+## Orientação para iniciantes (v0.8.3)
+
+Ao receber uma história de alguém sem familiaridade técnica, guie pela sequência [Comece aqui](docs/COMECE_AQUI.md) → [Primeira história](docs/PRIMEIRA_HISTORIA.md). Não exija que a pessoa escreva JSON manualmente. `npm run doctor` é somente leitura; `npm run demo` é uma demonstração sintética local que **não** comprova geração Google Flow ou aprovação editorial. Sempre explique a próxima decisão humana, separando planejamento, mídia original verificada e `PREVIEW_RENDERED`. Nunca aprove editorialmente, autorize créditos ou finja login em nome do usuário.

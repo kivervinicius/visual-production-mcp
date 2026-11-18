@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.3 — onboarding documentado e demonstração offline
+
+- README reescrito para iniciantes e índice reorganizado por público; README técnico anterior arquivado.
+- Tutoriais em português: instalação Windows/macOS/Linux, primeira história, configuração opcional do Flow, glossário e solução de problemas.
+- `npm run doctor`: diagnóstico somente leitura de Node, npm, dependências MCP, FFmpeg/FFprobe e codecs.
+- `npm run demo`: cria um MP4 sintético local com movimentos e legendas, sem contas, aprovação de histórias ou créditos externos; saída imutável e reutilizável.
+- Testes automatizados para instalação, integridade, retomada e demo; CI verifica os comandos de primeiro uso.
+- Não altera os contratos pagos do Flow nem declara geração ao vivo homologada.
+
 ## 0.8.1 — Flow archive → Media Composer (local bridge)
 
 - Added read-only `production_render_flow_link_plan` for an existing completed Flow video with a content-addressed local receipt, verified job/account/story/shot, expected duration and ratio.

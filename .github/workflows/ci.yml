@@ -17,6 +17,8 @@ jobs:
           ffmpeg -version
           ffprobe -version
       - run: npm install --no-audit --no-fund
+      - run: npm run doctor -- --strict
+      - run: npm run demo
       - run: npm run check
       - run: npm run docs:check
       - run: npm test
