@@ -190,7 +190,7 @@ test('completed asset upload stores account-local provider ID and hash without c
  await library.decide({libraryId:'shared/lia',version:1,expectedFingerprint:p.fingerprint,decision:'approve'});
  const guide=new StoryGuide(studio);
  await guide.create({id:'bindtest',title:'Bind',storyText:'Lia chegou.'});
- await guide.submitCast('bindtest',{visualStyle:'2D',characters:[{id:'lia',name:'Lia',sourceExcerpt:'Lia chegou.',designPrompt:'Lia de casaco',libraryId:'shared/lia'}],locations:[],assumptions:[]});
+ await guide.submitCast('bindtest',{visualStyle:'2D',characters:[{id:'lia',name:'Lia',sourceExcerpt:'Lia chegou.',designPrompt:'Lia de casaco',libraryId:'shared/lia',libraryVersion:1}],locations:[],assumptions:[]});
  await guide.submitStoryboard('bindtest',{scenes:[{id:'s',title:'S',sourceExcerpt:'Lia chegou.',shots:[{id:'sh',sourceExcerpt:'Lia chegou.',visualPrompt:'Lia',motionPrompt:'Caminha',durationSeconds:6,characterIds:['lia']}]}]});
  await guide.approve('bindtest');
  await studio.registerAccount({id:'accountA',label:'A',provider:'google-flow',authorized:true,creditEstimate:100,upstreamId:'mcpA'});
