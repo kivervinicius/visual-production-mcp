@@ -173,7 +173,8 @@ export class StoryGuide {
       const entry=state.visualLibrary?.entities?.[libraryId];
       if(entry)assert(entry.kind===kind,`Library kind mismatch for ${libraryId}`);
       const revisions=Object.values(entry?.versions||{}).filter(r=>r.status==='approved').sort((a,b)=>b.version-a.version);
-      const found=item.libraryVersion!==undefined?revisions.find(r=>r.version===item.libraryVersion):revisions.find(r=>r.description===item.designPrompt);
+      assert(!(item.libraryId && revisions.length>0 && item.libraryVersion===undefined),`Approved library ${libraryId} exists: pin libraryVersion in the reviewed cast to prevent an unapproved visual change`);
+      const found=item.libraryVersion!==undefined?revisions.find(r=>r.version===item.libraryVersion):null;
       if(item.libraryVersion!==undefined)assert(found,`Approved pinned visual library version missing: ${libraryId}@${item.libraryVersion}`);
       if(found)assert(found.description===item.designPrompt,`Visual description mismatch for ${libraryId}@${found.version}; use a new story revision, never silently substitute`);
       return found||null;
