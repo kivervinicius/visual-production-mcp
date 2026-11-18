@@ -28,12 +28,13 @@ Crie `.studio/gflow-cli-profiles.json`:
   "flow-personal": {
     "profile": "personal",
     "projectId": "234e4567-e89b-42d3-a456-426614174000",
-    "model": "veo_fast"
+    "model": "veo_fast",
+    "expectedGoogleEmail": "operator@example.com"
   }
 }
 ```
 
-`profile` é o nome local do perfil de browser do gflow-cli; `projectId` é um **exemplo**, substitua pelo identificador real. Valores permitidos no mapeamento de modelo: `veo_lite`, `veo_fast`, `veo_quality`, `omni_flash`, `omni_1_2_flash`. A versão do modelo e a duração são revalidadas conforme o contrato publicado, mas o servidor remoto pode ter controles diferentes por conta. Nenhum valor de crédito ou disponibilidade ao vivo é inferido dessa configuração.
+`expectedGoogleEmail` deve ser o email da conta efetivamente autorizada. No modo `--live`, o plano exige correspondência exata entre esse valor e `gflow_auth_status.user_email` — **o nome do perfil de navegador não prova identidade**. O email não é incluído no relatório. `profile` é o nome local do perfil de browser do gflow-cli; `projectId` é um **exemplo**, substitua pelo identificador real. Valores permitidos no mapeamento de modelo: `veo_lite`, `veo_fast`, `veo_quality`, `omni_flash`, `omni_1_2_flash`. A versão do modelo e a duração são revalidadas conforme o contrato publicado, mas o servidor remoto pode ter controles diferentes por conta. Nenhum valor de crédito ou disponibilidade ao vivo é inferido dessa configuração.
 
 ## Pré-verificação
 

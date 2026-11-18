@@ -13,7 +13,7 @@ const hash=b=>createHash('sha256').update(b).digest('hex');
 const JOB='123e4567-e89b-42d3-a456-426614174000';
 const PROJECT='234e4567-e89b-42d3-a456-426614174000';
 const schema={type:'object',properties:Object.fromEntries(['profile','project','model','mode','prompt','aspect','duration','count','wait','initial_frame','end_frame','reference_images'].map(k=>[k,{type:['count','duration'].includes(k)?'integer':k==='wait'?'boolean':k==='reference_images'?'array':'string'}])),additionalProperties:false};
-const fake=({auth={status:'authenticated',profile:'operator'},tools=[{name:'gflow_auth_status',inputSchema:{type:'object',properties:{profile:{type:'string'}}}},{name:'gflow_generate_video',inputSchema:schema}]}={})=>{
+const fake=({auth={status:'authenticated',profile:'operator',user_email:'operator@example.com'},tools=[{name:'gflow_auth_status',inputSchema:{type:'object',properties:{profile:{type:'string'}}}},{name:'gflow_generate_video',inputSchema:schema}]}={})=>{
   const calls=[];
   return {calls,connection:async(home,id,fn)=>fn({listTools:async()=>({tools}),callTool:async v=>{calls.push(v);if(v.name==='gflow_auth_status')return {content:[{type:'text',text:JSON.stringify(auth)}]};throw Error('Unexpected paid operation!')}})};
 };
@@ -26,7 +26,7 @@ async function make(t,{op='video.frames',extra={},account='acc',start='step:stil
   await studio.importProject(prod);
   await studio.registerAccount({id:'acc',label:'Explicit Flow account',provider:'google-flow',upstreamId:'gflow-up',authorized:true,creditEstimate:100});
   await studio.bindAccountProject({projectId:'episode',accountId:'acc',remoteProjectId:projectId});
-  await fs.writeFile(path.join(home,'gflow-cli-profiles.json'),JSON.stringify({acc:{profile:'operator',projectId,model:'veo_fast'}}));
+  await fs.writeFile(path.join(home,'gflow-cli-profiles.json'),JSON.stringify({acc:{profile:'operator',projectId,model:'veo_fast',expectedGoogleEmail:'operator@example.com'}}));
   const w=new WorkflowStudio(studio),pathW=path.join(dir,'workflow.json');
   const input=op==='video.frames'?{prompt:'A slow cinematic dolly into the forest',aspectRatio:'9:16',durationSeconds:8,startFrame:start,...extra}:{prompt:'Follow approved character and scene references',aspectRatio:'9:16',durationSeconds:8,ingredients:references,...extra};
   const steps=[{id:'still',accountId:'acc',operation:'image.generate',inputs:{prompt:'An original still'},estimatedCredits:0,dependsOn:[]},
@@ -91,7 +91,7 @@ test('duration and model are exact; no substitution or credit guess',async t=>{
   await assert.rejects(planGflowFrameStep(w,'movie','motion'),/not supported/);
 });
 test('rejects profile substitution after authentication',async t=>{
-  const {w}=await make(t);const provider=fake({auth:{status:'authenticated',profile:'another-account'}});
+  const {w}=await make(t);const provider=fake({auth:{status:'authenticated',profile:'another-account',user_email:'operator@example.com'}});
   await assert.rejects(planGflowFrameStep(w,'movie','motion',{probeUpstream:true,connection:provider.connection}),/differs/);
   assert.deepEqual(provider.calls.map(c=>c.name),['gflow_auth_status']);
 });
@@ -103,5 +103,20 @@ test('rejects upstream contracts that lack first-frame input',async t=>{
 test('missing canonical start frame rejects preflight before any network calls',async t=>{
   const {w,studio}=await make(t);await studio.store.mutate(s=>{delete s.workflows.movie.steps.still.output.receipt});
   const provider=fake();await assert.rejects(planGflowFrameStep(w,'movie','motion',{probeUpstream:true,connection:provider.connection}),/no verified media receipt/);
+  assert.equal(provider.calls.length,0);
+});
+
+test('rejects a different Google identity even when local browser profile is the same',async t=>{
+  const {w}=await make(t);const provider=fake({auth:{status:'authenticated',profile:'operator',user_email:'other@example.com'}});
+  await assert.rejects(planGflowFrameStep(w,'movie','motion',{probeUpstream:true,connection:provider.connection}),/Google identity differs/);
+  assert.deepEqual(provider.calls.map(c=>c.name),['gflow_auth_status']);
+});
+test('refuses live probe without an operator-pinned expected Google identity',async t=>{
+  const {w,home}=await make(t);
+  await fs.writeFile(path.join(home,'gflow-cli-profiles.json'),JSON.stringify({acc:{profile:'operator',projectId:PROJECT,model:'veo_fast'}}));
+  const provider=fake();
+  const offline=await planGflowFrameStep(w,'movie','motion');
+  assert.equal(offline.googleIdentityVerified,false);
+  await assert.rejects(planGflowFrameStep(w,'movie','motion',{probeUpstream:true,connection:provider.connection}),/expectedGoogleEmail/);
   assert.equal(provider.calls.length,0);
 });

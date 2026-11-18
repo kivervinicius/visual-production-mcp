@@ -49,10 +49,11 @@ async function configured(home,accountId){
   const configs=JSON.parse(await fs.readFile(file,'utf8'));
   const cfg=configs[accountId];
   assert(isObject(cfg),'Missing operator-configured gflow-cli profile');
-  assert(Object.keys(cfg).every(k=>['profile','projectId','model'].includes(k)), 'Unexpected gflow-cli profile fields');
+  assert(Object.keys(cfg).every(k=>['profile','projectId','model','expectedGoogleEmail'].includes(k)), 'Unexpected gflow-cli profile fields');
   assert(typeof cfg.profile==='string'&&PROFILE.test(cfg.profile),'Invalid gflow-cli profile name');
   assert(typeof cfg.projectId==='string'&&PROJECT.test(cfg.projectId),'Configure a native Flow project ID, not a guessed project title');
   assert(typeof cfg.model==='string'&&Object.hasOwn(MODELS,cfg.model),'gflow-cli model must be explicitly configured');
+  if(cfg.expectedGoogleEmail!==undefined)assert(typeof cfg.expectedGoogleEmail==='string'&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cfg.expectedGoogleEmail),'Invalid expectedGoogleEmail in operator profile');
   return cfg;
 }
 async function resolveReference({home,manifest,workflow,step,state,token}){
@@ -137,6 +138,7 @@ export async function planGflowFrameStep(workflows,workflowId,stepId,{probeUpstr
     ...(spec.mode==='i2v'?{initial_frame:sources[0].path,...(sources[1]?{end_frame:sources[1].path}:{})}:{reference_images:sources.map(s=>s.path)})};
   let liveSchemaVerified=false,liveAuthenticationVerified=false;
   if(probeUpstream){
+    assert(cfg.expectedGoogleEmail,'Configure expectedGoogleEmail before probing a Google account; a browser profile name is not an identity');
     const upstream=connection||(await import('../../upstream.mjs')).withUpstream;
     const checked=await upstream(home,account.upstreamId,async client=>{
       const {tools}=await client.listTools();
@@ -144,6 +146,7 @@ export async function planGflowFrameStep(workflows,workflowId,stepId,{probeUpstr
       validateToolSignature(authTool,{profile:cfg.profile});
       const auth=structured(await client.callTool({name:'gflow_auth_status',arguments:{profile:cfg.profile}}),'gflow_auth_status');
       assert(auth.status==='authenticated'&&auth.profile===cfg.profile,'gflow-cli authenticated profile differs from operator-selected identity');
+      assert(typeof auth.user_email==='string'&&auth.user_email.toLowerCase()===cfg.expectedGoogleEmail.toLowerCase(),'gflow-cli authenticated Google identity differs from operator-selected email');
       const video=toolSchema(tools,'gflow_generate_video');
       const keys=Object.keys(args);
       assert(keys.every(k=>Object.hasOwn(video.inputSchema.properties||{},k)),`Upstream tool drops ${keys.filter(k=>!Object.hasOwn(video.inputSchema.properties||{},k)).join(', ')}`);
@@ -156,7 +159,7 @@ export async function planGflowFrameStep(workflows,workflowId,stepId,{probeUpstr
     upstreamId:account.upstreamId,tool:'gflow_generate_video',projectId:cfg.projectId,model:cfg.model,
     references:sources,argumentsPreview:args,estimatedCredits:step.estimatedCredits,
     operatorApproved:workflow.steps[stepId]?.status==='approved',liveSchemaVerified,liveAuthenticationVerified,
-    nativeProjectVerified:false,liveCreditQuoteVerified:false,paidExecutionImplemented:false,
+    nativeProjectVerified:false,googleIdentityVerified:liveAuthenticationVerified,liveCreditQuoteVerified:false,paidExecutionImplemented:false,
     nextAction:'Verify project identity and live credit quote manually; an operator-approved paid i2v/r2v dispatch and durable provider receipt still need to be implemented.',
     warning:'READ-ONLY: this planner never calls gflow_generate_video and must not be treated as production output.'};
 }
