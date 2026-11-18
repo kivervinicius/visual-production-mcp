@@ -12,13 +12,14 @@ import { StageEngine } from './application/guide/stage-engine.mjs';
 import { VisualLibrary } from './application/library/visual-library.mjs';
 import { listFlowOperations } from './flow-operations.mjs';
 import { inspectWorkflowStep, executeWorkflowStep } from './workflow-adapter.mjs';
+import {inspectFlowAccount,inspectFlowStep,submitFlowStep,reconcileFlowStep,downloadFlowStep} from './providers/google-flow/miyakejima.mjs';
 
 const studio = new Studio();
 const workflows = new WorkflowStudio(studio);
 const storyGuide = new StoryGuide(studio);
 const stageEngine = new StageEngine(studio);
 const visualLibrary = new VisualLibrary(studio);
-const server = new McpServer({ name: 'visual-production-mcp', version: '0.6.0' });
+const server = new McpServer({ name: 'visual-production-mcp', version: '0.7.0' });
 const result = x => ({ content: [{ type: 'text', text: JSON.stringify(x, null, 2) }] });
 const tool = (name, description, inputSchema, action) => server.registerTool(name, { description, inputSchema: z.object(inputSchema) }, async args => {
   try { return result(await action(args)); }
@@ -58,6 +59,13 @@ tool('studio_workflow_status', 'Read a single workflow, its canonical inputs, ap
 tool('studio_workflow_plan', 'Read-only dependency plan with per-account bindings, readiness and manual credit estimates.', { workflowId: id }, ({ workflowId }) => workflows.plan(workflowId));
 tool('studio_workflow_inspect_step', 'Verify tool name, parameters and required fields against the real upstream MCP schema. No spending or provider-login assertion.', { workflowId: id, stepId: id }, ({workflowId,stepId}) => inspectWorkflowStep(workflows,workflowId,stepId));
 tool('studio_workflow_execute_step', 'Submit exactly one previously OPERATOR-approved workflow step through configured upstream. On unknown result, block retries. Never rotates accounts.', { workflowId: id, stepId: id }, ({workflowId,stepId}) => executeWorkflowStep(workflows,workflowId,stepId));
+
+// F3 upstream-profile integration. Only the verified image.generate and video.text subset is supported.
+tool('studio_flow_live_account', 'Verify the selected Flow account is connected, its workspace is available, and discover current models and ratios. READ-ONLY.', { accountId:id }, ({accountId})=>inspectFlowAccount(studio,accountId));
+tool('studio_flow_live_step', 'Inspect exact account, selected model, ratio, workflow project name and MCP tool schema before authorization. READ-ONLY.', { workflowId:id, stepId:id }, ({workflowId,stepId})=>inspectFlowStep(workflows,workflowId,stepId));
+tool('studio_flow_submit_step', 'F3: execute exactly one previously OPERATOR-approved image.generate or video.text with verified connected Flow account, no silent creative input loss. May spend credits; unknown responses lock the step.', { workflowId:id,stepId:id }, ({workflowId,stepId})=>submitFlowStep(workflows,workflowId,stepId));
+tool('studio_flow_reconcile_step', 'Check exact existing upstream Flow job and re-hash downloaded local media; NEVER resubmit generation. Technical completion is not editorial approval.', { workflowId:id,stepId:id }, ({workflowId,stepId})=>reconcileFlowStep(workflows,workflowId,stepId));
+tool('studio_flow_download_step', 'Request a missing download for the exact previously submitted Flow job; never generates or chooses the latest gallery file.', {workflowId:id,stepId:id},({workflowId,stepId})=>downloadFlowStep(workflows,workflowId,stepId));
 
 
 // Versioned visual continuity: agents can propose images but cannot grant editorial approval.

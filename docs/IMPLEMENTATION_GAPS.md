@@ -93,3 +93,7 @@
 ## Atualização F2 / v0.6
 
 Biblioteca visual versionada, impacto por plano e seleção editorial de stills estão implementados **apenas localmente**. Ao compilar um roteiro que fixa uma referência aprovada, o compilador cria um passo `asset.upload` por conteúdo SHA-256, sem gerar novamente a imagem de personagem/local. Isto não equivale à homologação de upload real em Flow. O mapeamento operador-confirma `providerAssetId` precisa ser testado com bridge autenticada. Ver [VISUAL_LIBRARY.md](VISUAL_LIBRARY.md), [issue #12](https://github.com/kivervinicius/visual-production-mcp/issues/12).
+
+## Atualização F3 / v0.7 (bridge parcial)
+
+O adaptador `src/providers/google-flow/miyakejima.mjs` implementa inspeção live de conta/capabilities e um caminho controlado de geração de **imagem sem referências** e **vídeo somente por texto** via MCP upstream independente. Poll e download do mesmo UUID são possíveis, com re-hash e validação local. Essa implementação não garante autenticação efetiva ou produção ao vivo no ambiente do desenvolvedor; um teste autenticado do operador é necessário. `asset.upload`, `video.frames`, `video.ingredients`, native project ID e live quote continuam como bloqueios para o episódio completo. Referência operacional: [FLOW_LIVE_BRIDGE.md](FLOW_LIVE_BRIDGE.md).

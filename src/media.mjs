@@ -24,7 +24,7 @@ function imageSignatureValid(extension, header) {
   return false;
 }
 
-async function metadata(file, extension) {
+export async function metadata(file, extension) {
   if (IMAGE_EXTS.has(extension)) {
     const handle = await fs.open(file, 'r');
     try {
