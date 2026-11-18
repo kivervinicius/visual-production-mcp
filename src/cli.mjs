@@ -5,6 +5,7 @@ import { WorkflowStudio } from './workflows.mjs';
 import { StoryGuide } from './story-guide.mjs';
 import { StageEngine } from './application/guide/stage-engine.mjs';
 import { VisualLibrary } from './application/library/visual-library.mjs';
+import {renderPlan,renderMedia,writeRenderTemplate,exportOfflineStory} from './application/deliver/media-composer.mjs';
 import {inspectFlowAccount,inspectFlowStep,reconcileFlowStep,downloadFlowStep} from './providers/google-flow/miyakejima.mjs';
 const studio = new Studio();
 const workflows = new WorkflowStudio(studio);
@@ -15,6 +16,18 @@ const [command, ...params] = process.argv.slice(2);
 try {
   let value;
   switch (command) {
+    case 'render-export':
+      if(!params[0])throw new Error('Usage: render-export <approvedStoryId>');
+      value=await exportOfflineStory(studio,params[0]);break;
+    case 'render-init':
+      if(!params[0])throw new Error('Usage: render-init <StoryGuide production directory>');
+      value=await writeRenderTemplate(params[0]);break;
+    case 'render-plan':
+      if(!params[0])throw new Error('Usage: render-plan <RENDER_INPUTS.json>');
+      value=await renderPlan(params[0]);break;
+    case 'render':
+      if(!params[0])throw new Error('Usage: render <RENDER_INPUTS.json>');
+      value=await renderMedia(params[0]);break;
     case 'flow-live-account':
       if(!params[0])throw new Error('Usage: flow-live-account <accountId>');
       value=await inspectFlowAccount(studio,params[0]);break;
@@ -88,7 +101,7 @@ try {
       if (!params[0]) throw new Error('Usage: npm run operator -- workflow-plan <workflowId>');
       value = await workflows.plan(params[0]); break;
     case 'status': value = await studio.list(); break;
-    default: throw new Error('Operator commands: flow-live-account <accountId> | flow-live-step <workflowId> <stepId> | flow-live-reconcile <workflowId> <stepId> | flow-live-download <workflowId> <stepId> | visual-list | visual-status <libraryId> [version] | visual-approve <libraryId> <version> <fingerprint> | visual-reject <libraryId> <version> <fingerprint> <note> | visual-shot-review <projectId> <shotId> <variant> <sha256> approve|reject [note] | production-status <id> | production-next <id> | production-events <id> [cursor] | production-decision <id> approve|request_changes <reviewVersion> [note] | story-start <id> <title> <storyfile> | story-status <id> | story-approve <id> | workflow-import <file> | workflow-plan <id> | workflow-approve <id> <step> | workflow-reconcile <id> <step> <remoteJob> | workflow-complete <id> <step> <remoteAsset> <evidence> | approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
+    default: throw new Error('Operator commands: render-export <storyId> | render-init <packageDir> | render-plan <RENDER_INPUTS.json> | render <RENDER_INPUTS.json> | flow-live-account <accountId> | flow-live-step <workflowId> <stepId> | flow-live-reconcile <workflowId> <stepId> | flow-live-download <workflowId> <stepId> | visual-list | visual-status <libraryId> [version] | visual-approve <libraryId> <version> <fingerprint> | visual-reject <libraryId> <version> <fingerprint> <note> | visual-shot-review <projectId> <shotId> <variant> <sha256> approve|reject [note] | production-status <id> | production-next <id> | production-events <id> [cursor] | production-decision <id> approve|request_changes <reviewVersion> [note] | story-start <id> <title> <storyfile> | story-status <id> | story-approve <id> | workflow-import <file> | workflow-plan <id> | workflow-approve <id> <step> | workflow-reconcile <id> <step> <remoteJob> | workflow-complete <id> <step> <remoteAsset> <evidence> | approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
   }
   console.log(JSON.stringify(value, null, 2));
 } catch (error) { console.error(error.message); process.exitCode = 1; }

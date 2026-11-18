@@ -97,3 +97,7 @@ Biblioteca visual versionada, impacto por plano e seleção editorial de stills 
 ## Atualização F3 / v0.7 (bridge parcial)
 
 O adaptador `src/providers/google-flow/miyakejima.mjs` implementa inspeção live de conta/capabilities e um caminho controlado de geração de **imagem sem referências** e **vídeo somente por texto** via MCP upstream independente. Poll e download do mesmo UUID são possíveis, com re-hash e validação local. Essa implementação não garante autenticação efetiva ou produção ao vivo no ambiente do desenvolvedor; um teste autenticado do operador é necessário. `asset.upload`, `video.frames`, `video.ingredients`, native project ID e live quote continuam como bloqueios para o episódio completo. Referência operacional: [FLOW_LIVE_BRIDGE.md](FLOW_LIVE_BRIDGE.md).
+
+## Atualização F4 / v0.8 (Media Composer local)
+
+O Media Composer já transforma imagens/clipes locais explicitamente associados aos IDs dos planos do StoryGuide em **MP4 real**, com movimentos discretos, áudio e legendas opcionais. Inclui verificações FFprobe, SHA-256 e arquivo de QC. Não existe, porém, integração automática dos downloads Flow com o mapeamento local, aprovação criativa final, fila durável de render ou QC avançado (silêncio/falhas visuais). O produto permanece em preview técnico, não release v1.0. Consulte [MEDIA_COMPOSER.md](MEDIA_COMPOSER.md).

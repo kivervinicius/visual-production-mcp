@@ -64,6 +64,8 @@ A primeira entrega de produto (v1.0) deve funcionar **com uma única conta Googl
 
 ### F4 — scheduler, mídia, revisão e exportação final (v0.8)
 
+**Entrega parcial na v0.8:** Media Composer local com template baseado no StoryGuide, storyboard obrigatório, imagens com movimentos discretos, clipes existentes, áudio opcional, SRT e MP4, hashes e QC técnico. Testes offline geram MP4 físico e verificam FFprobe. **Ainda pendentes:** scheduler durável, aprovação editorial de delivery, revisão audiovisual automática/humana, narração/áudio como produção e integração direta do download Flow ao slot de edição. Confira [MEDIA_COMPOSER.md](MEDIA_COMPOSER.md).
+
 **Implementar:** filas duráveis, leases, reconciliação, download retomável, storage com hashes, FFprobe, previews/contact sheets, aprovação por shot, áudio/narração por fonte configurável, legendas `srt/vtt`, timeline/EDL e FFmpeg determinístico. O `EDIT_MANIFEST` vira contrato executável; assets brutos nunca são alterados.
 
 **Gate:** E2E local com fixtures produz `final.mp4`, `subtitles.srt`, relatório QC e manifesto de proveniência; retomada de falha após download não aciona nova geração paga; áudio ausente é explicitado, não inventado.

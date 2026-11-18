@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.0 — F4 Media Composer (local preview)
+
+- Added an isolated FFmpeg/FFprobe renderer that consumes canonical `EDIT_MANIFEST.json` + `production.json` and explicit `RENDER_INPUTS.json`, supporting source images with micro-motions or local video clips.
+- Added optional audio, SRT sidecar and MP4 subtitle track, H.264/AAC, technical QC, immutable fingerprinted renders and SHA-256 evidence.
+- MCP exposes read-only `production_render_template` and `production_render_plan`; rendering itself is operator-only via `render-init`, `render-plan`, and `render`.
+- New E2E offline tests create physical images/video/audio and verify a final MP4; no provider account or credits required.
+- Remaining F4 work: image/clip QC beyond metadata, automatic mapping of Flow downloads, editorial delivery approval and recovery/queue scaling.
+
+
 ## 0.7.0 — Flow upstream bridge (F3 pilot, not live-certified)
 
 - Added first-party adapter to the operator-managed `miyakejima/google-flow-mcp` tool contract with live account/profile inspection, capability/schema checks and single approved dispatch for image.generate/video.text.
@@ -56,6 +65,15 @@
 - **Not yet validated against authenticated Flow or Higgsfield accounts; no credits used.**
 
 # Changelog
+
+## 0.8.0 — F4 Media Composer (local preview)
+
+- Added an isolated FFmpeg/FFprobe renderer that consumes canonical `EDIT_MANIFEST.json` + `production.json` and explicit `RENDER_INPUTS.json`, supporting source images with micro-motions or local video clips.
+- Added optional audio, SRT sidecar and MP4 subtitle track, H.264/AAC, technical QC, immutable fingerprinted renders and SHA-256 evidence.
+- MCP exposes read-only `production_render_template` and `production_render_plan`; rendering itself is operator-only via `render-init`, `render-plan`, and `render`.
+- New E2E offline tests create physical images/video/audio and verify a final MP4; no provider account or credits required.
+- Remaining F4 work: image/clip QC beyond metadata, automatic mapping of Flow downloads, editorial delivery approval and recovery/queue scaling.
+
 
 ## 0.7.0 — Flow upstream bridge (F3 pilot, not live-certified)
 

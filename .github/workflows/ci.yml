@@ -8,6 +8,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify media toolchain
+        run: ffmpeg -version && ffprobe -version
       - run: npm install --no-audit --no-fund
       - run: npm run check
       - run: npm run docs:check

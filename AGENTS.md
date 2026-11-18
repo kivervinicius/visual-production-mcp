@@ -61,3 +61,10 @@ Antes de regenerar um personagem ou ambiente, consulte `studio_visual_list` e `s
 ## Flow live bridge F3 (v0.7)
 
 Para uma conta Google Flow autorizada, prefira `studio_flow_live_account` e `studio_flow_live_step` antes de executar. A bridge v0.7 é limitada a `image.generate` sem referências e `video.text`. Não converter `video.frames` nem `video.ingredients` em `video.text`, não apagar `referenceImages` ou startFrame para fazer a chamada passar. Aprovação financeira somente no CLI pelo operador. `studio_flow_submit_step` permite **uma submissão**, e `studio_flow_reconcile_step` consulta o mesmo job. Sem conta autenticada e mídia real validada, informe `BLOCKED`/`NOT_LIVE_TESTED` e não invente sucesso. Veja [docs/FLOW_LIVE_BRIDGE.md](docs/FLOW_LIVE_BRIDGE.md).
+
+## Media Composer v0.8 — evidence boundary
+
+- Read `docs/MEDIA_COMPOSER.md` before preparing any local render. Use `production_render_story_plan` to inspect an approved account-free story and operator `render-export <storyId>` to create its local package. Use `production_render_template` to derive required shots and `production_render_plan` to check exact local media. Do not fabricate missing files or omit canonical shots.
+- Render is an **operator-only CLI** action: `npm run operator -- render <RENDER_INPUTS.json>`. Do not call FFmpeg through generic shell tools in place of the validated contract unless the operator explicitly requests manual troubleshooting.
+- `PREVIEW_RENDERED` proves a technically inspected local MP4, **not** editorial approval, Google Flow generation, or final DELIVERY.
+- Never change an approved shot duration or map IDs from other projects to force a successful render; create new versions and request editorial approval instead.
