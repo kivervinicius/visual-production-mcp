@@ -131,6 +131,9 @@ export class StoryGuide {
     return this.studio.store.mutate(state=>{
       const s=state.stories?.[validId(id,'storyId')];assert(s?.cast&&s.storyboard,'Cast and storyboard are required');
       if(s.approvedAt)return {id,alreadyApproved:true,approvedAt:s.approvedAt};
+      const rejected=state.productionGuides?.[id]?.review;
+      const currentRevision=SHA(JSON.stringify({sourceSha256:s.sha256,cast:s.cast,storyboard:s.storyboard}));
+      assert(!(rejected?.decision==='request_changes'&&rejected.revision===currentRevision),'Rejected draft must change before editorial approval');
       s.approvedAt=now();return {id,approvedAt:s.approvedAt,sourceCoveragePercent:s.storyCoveragePercent,assumptions:s.cast.assumptions,next:next(s,state)};
     });
   }

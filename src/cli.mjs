@@ -3,9 +3,11 @@ import { Studio } from './core.mjs';
 import { reviewResult } from './media.mjs';
 import { WorkflowStudio } from './workflows.mjs';
 import { StoryGuide } from './story-guide.mjs';
+import { StageEngine } from './application/guide/stage-engine.mjs';
 const studio = new Studio();
 const workflows = new WorkflowStudio(studio);
 const stories = new StoryGuide(studio);
+const stages = new StageEngine(studio);
 const [command, ...params] = process.argv.slice(2);
 try {
   let value;
@@ -16,6 +18,18 @@ try {
     case 'story-status':
       if(!params[0])throw new Error('Usage: npm run operator -- story-status <storyId>');
       value=await stories.status(params[0]);break;
+    case 'production-status':
+      if(!params[0])throw new Error('Usage: npm run operator -- production-status <storyId>');
+      value=await stages.status(params[0]);break;
+    case 'production-next':
+      if(!params[0])throw new Error('Usage: npm run operator -- production-next <storyId>');
+      value=await stages.next(params[0]);break;
+    case 'production-events':
+      if(!params[0])throw new Error('Usage: npm run operator -- production-events <storyId> [cursor]');
+      value=await stages.events(params[0],{cursor:params[1]===undefined?0:Number(params[1])});break;
+    case 'production-decision':
+      if(!params[0]||!['approve','request_changes'].includes(params[1])||!params[2])throw new Error('Usage: npm run operator -- production-decision <storyId> approve|request_changes <expectedReviewVersion> [note]');
+      value=await stages.operatorDecision(params[0],{decision:params[1],expectedReviewVersion:params[2],note:params.slice(3).join(' ')});break;
     case 'story-approve':
       if(!params[0])throw new Error('Usage: npm run operator -- story-approve <storyId>');
       value=await stories.approve(params[0]);break;
@@ -47,7 +61,7 @@ try {
       if (!params[0]) throw new Error('Usage: npm run operator -- workflow-plan <workflowId>');
       value = await workflows.plan(params[0]); break;
     case 'status': value = await studio.list(); break;
-    default: throw new Error('Operator commands: story-start <id> <title> <storyfile> | story-status <id> | story-approve <id> | workflow-import <file> | workflow-plan <id> | workflow-approve <id> <step> | workflow-reconcile <id> <step> <remoteJob> | workflow-complete <id> <step> <remoteAsset> <evidence> | approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
+    default: throw new Error('Operator commands: production-status <id> | production-next <id> | production-events <id> [cursor] | production-decision <id> approve|request_changes <reviewVersion> [note] | story-start <id> <title> <storyfile> | story-status <id> | story-approve <id> | workflow-import <file> | workflow-plan <id> | workflow-approve <id> <step> | workflow-reconcile <id> <step> <remoteJob> | workflow-complete <id> <step> <remoteAsset> <evidence> | approve <jobId> | reconcile <jobId> <externalJobId> | review <jobId> approved|rejected [note] | import <manifestPath> | status');
   }
   console.log(JSON.stringify(value, null, 2));
 } catch (error) { console.error(error.message); process.exitCode = 1; }

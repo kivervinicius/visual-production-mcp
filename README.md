@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/kivervinicius/visual-production-mcp/actions/workflows/ci.yml)
 
-**v0.4.0 (experimental) · MCP para transformar histórias em planos de produção audiovisual · Local-first · Google Flow como primeiro adaptador**
+**v0.5.0 (experimental) · MCP para transformar histórias em planos de produção audiovisual · Local-first · Google Flow como primeiro adaptador**
 
 > **Comece com uma história, não com um JSON.** O usuário conta sua história ou fornece um arquivo `.md`/`.txt`; seu agente de IA (Codex, Antigravity ou outro cliente MCP) conduz a preparação passo a passo. O MCP preserva a fonte, valida a rastreabilidade do material proposto, organiza personagens/cenários/cenas e compila prompts e tarefas para produzir imagens e vídeos no provedor conectado.
 >
@@ -10,11 +10,32 @@
 
 ## Plano de finalização e desenvolvimento
 
-A versão atual é **v0.4.0 (planejamento guiado)**: ainda não é gerador de episódios completo. A estratégia de conclusão e os critérios para declarar v1.0 estão documentados em [Plano de finalização](docs/FINALIZATION_PLAN.md), [Jornada do produto](docs/PRODUCT_JOURNEY.md), [Arquitetura-alvo](docs/TARGET_ARCHITECTURE.md) e [Matriz de aceite](docs/ACCEPTANCE_MATRIX.md).
+A versão atual é **v0.5.0 (planejamento guiado com progresso e eventos)**: ainda não é gerador de episódios completo. A estratégia de conclusão e os critérios para declarar v1.0 estão documentados em [Plano de finalização](docs/FINALIZATION_PLAN.md), [Jornada do produto](docs/PRODUCT_JOURNEY.md), [Arquitetura-alvo](docs/TARGET_ARCHITECTURE.md) e [Matriz de aceite](docs/ACCEPTANCE_MATRIX.md).
 
 Para agentes, há uma [Skill de direção audiovisual](skills/visual-production-director/SKILL.md) que conduz a jornada usando ferramentas disponíveis e deixa explícitas as integrações ainda pendentes. Para implementar os próximos marcos, consulte o [Runbook](docs/IMPLEMENTATION_RUNBOOK.md) e [CONTRIBUTING.md](CONTRIBUTING.md). A documentação técnica está indexada em [docs/README.md](docs/README.md).
 
 **Regra de produto:** uma pessoa fornece a história e aprova as decisões essenciais; o MCP guarda progresso, evidências e próxima ação. O Flow real e a montagem final dependem de trabalhos técnicos ainda não homologados.
+
+## Acompanhamento da produção (v0.5)
+
+A partir de uma história registrada, **o agente não precisa lembrar de conversas antigas**. Na entrada de cada sessão, use `production_get_status` e `production_get_next_action`. O StageEngine mostra dez fases, decisões pendentes, bloqueios e o trabalho imediato. Para saber o que mudou desde a última consulta, use `production_events` com o cursor retornado anteriormente; o servidor não envia notificações quando não há cliente conectado.
+
+```bash
+npm run operator -- production-status oficina-ep01
+npm run operator -- production-next oficina-ep01
+npm run operator -- production-events oficina-ep01 0
+```
+
+Após registrar elenco e storyboard, o comando de aprovação editorial recomendado é:
+
+```bash
+# Copie o reviewVersion real do production-status.
+npm run operator -- production-decision oficina-ep01 approve <reviewVersion>
+# Para pedir revisão antes de aprovar:
+npm run operator -- production-decision oficina-ep01 request_changes <reviewVersion> "Justificativa"
+```
+
+Esses comandos existem **somente no CLI do operador**, não como aprovação MCP pelo agente. A etapa `DELIVERY` permanece `PENDING` até existir vídeo final validado, capacidade ainda não implementada. Consulte o [contrato detalhado do StageEngine](docs/STAGE_ENGINE.md) e as [limitações atuais](docs/IMPLEMENTATION_GAPS.md).
 
 ## 1. O que é — e o que o usuário precisa fornecer
 
@@ -49,7 +70,7 @@ A pessoa permanece dona do roteiro e pode reutilizar a bíblia visual em novos e
 
 ## 2. Estado real das funcionalidades
 
-| Etapa | Estado na v0.4.0 | O que acontece de fato |
+| Etapa | Estado na v0.5.0 | O que acontece de fato |
 | --- | --- | --- |
 | Receber história colada ou arquivo UTF-8 | **Implementado** | Salva snapshot local imutável com SHA-256 |
 | Guiar análise de personagens e cenários | **Implementado com agente** | Ferramentas, validação de trechos e checkpoint; interpretação por LLM externo |
@@ -61,6 +82,7 @@ A pessoa permanece dona do roteiro e pode reutilizar a bíblia visual em novos e
 | Criar personagens, imagens ou vídeos no Flow | **Não homologado** | Requer adaptador real, autenticação, ferramentas existentes e aprovação |
 | Sincronizar referências entre contas | **Planejamento apenas** | Binding local; upload e hash remotos ainda não verificados |
 | Download e revisão de clipes gerados por workflow | **Manual/parcial** | Há ingestão verificada para jobs legados; não está integrado automaticamente à DAG |
+| Consultar 10 fases, próxima ação e eventos com retomada | **Implementado localmente** | Estado durável no StageEngine; não afirma que mídia remota foi validada |
 | Renderizar episódio final (FFmpeg/áudio/legenda) | **Pendente** | Exporta ordem de montagem, não MP4 final |
 | Higgsfield | **Arquitetura prevista** | Ainda não existe adaptador end-to-end verificado |
 
@@ -78,8 +100,7 @@ O catálogo em `src/flow-operations.mjs` descreve **23 tipos de operações do p
 
 ```bash
 # Para testar a branch de desenvolvimento:
-git clone -b feat/story-first-guided-production \
-  https://github.com/kivervinicius/visual-production-mcp.git
+git clone https://github.com/kivervinicius/visual-production-mcp.git
 cd visual-production-mcp
 npm install
 npm run check
@@ -178,7 +199,9 @@ A aprovação é **local e explícita**, no terminal do operador:
 
 ```bash
 npm run operator -- story-status oficina-ep01
-npm run operator -- story-approve oficina-ep01
+npm run operator -- production-status oficina-ep01
+# Use reviewVersion retornado pelo status:
+npm run operator -- production-decision oficina-ep01 approve <reviewVersion>
 ```
 
 Não exponha a aprovação editorial como ferramenta autônoma do MCP. Depois de aprovar, a bíblia e o storyboard são congelados para a compilação; alterações significativas precisam de uma nova versão da história.

@@ -11,13 +11,13 @@ Esta Skill é uma **instrução de orquestração para o agente**, não um novo 
 
 Receba uma história (texto, arquivo ou fonte editorial escolhida pelo usuário). Se o usuário não indicar formato, proponha um padrão coerente, marcando como hipótese. Se já houver um projeto, consulte `studio_story_list`/`studio_story_status` e retome, sem recriar o conteúdo. Não exija JSON, IDs remotos, ferramentas MCP ou conhecimento de modelos.
 
-## Ferramentas efetivamente presentes na v0.4
+## Ferramentas efetivamente presentes na v0.5
 
-`studio_story_start`, `studio_story_list`, `studio_story_source`, `studio_story_draft`, `studio_story_status`, `studio_story_submit_cast`, `studio_story_submit_storyboard`, `studio_story_prepare`, `studio_register_account`, `studio_flow_capabilities`, `studio_workflow_plan`, `studio_workflow_inspect_step`, `studio_workflow_execute_step`, `studio_sync_plan`, `studio_ingest_result`, `studio_status`.
+`production_get_status`, `production_get_next_action`, `production_events`, `studio_story_start`, `studio_story_list`, `studio_story_source`, `studio_story_draft`, `studio_story_status`, `studio_story_submit_cast`, `studio_story_submit_storyboard`, `studio_story_prepare`, `studio_register_account`, `studio_flow_capabilities`, `studio_workflow_plan`, `studio_workflow_inspect_step`, `studio_workflow_execute_step`, `studio_sync_plan`, `studio_ingest_result`, `studio_status`.
 
 Aprovação editorial e de custos permanece **exclusiva do operador local**: `npm run operator -- story-approve <id>` e `npm run operator -- workflow-approve <workflowId> <stepId>`. Não use ferramentas autônomas para autoaprovar.
 
-`production_get_next_action`, notificações de mudança de fase, download remoto e `assemble_final` são **contratos propostos**, não ferramentas da v0.4. Se estiverem ausentes, use `studio_story_status` e explique o bloqueio, sem fingir que a funcionalidade existe.
+`production_get_next_action` e `production_events` **já estão implementadas** como consultas locais. Mensagens externas fora da sessão, download remoto e `assemble_final` continuam **propostas não implementadas**. Para retomar, consulte primeiro `production_get_status` e use `production_events` desde o último cursor salvo; nunca represente sucesso de um provider como mídia validada.
 
 ## Protocolo de trabalho por fases
 
@@ -29,7 +29,7 @@ Aprovação editorial e de custos permanece **exclusiva do operador local**: `np
 6. **Preparação.** Selecione somente conta autorizada, consulte capabilities reais quando suportado, e compile o pacote com `studio_story_prepare`. Confira `CHARACTER_BIBLE.md`, `STORYBOARD.md`, `production.json`, `workflow.json` e `EDIT_MANIFEST.json`.
 7. **Referências e imagens.** Planeje o trabalho na ordem das dependências. Antes de gerar mídia, confirme que referências e parâmetros são aceitos pelo adaptador (`studio_workflow_inspect_step`). Se o recurso não estiver homologado, anuncie `BLOCKED` e a ação concreta para integrar o upstream.
 8. **Vídeos.** Para cada plano aprovado, obtenha quote real, autorização e somente então `studio_workflow_execute_step`. Uma resposta de formulário preparado não é geração concluída. Reconciliar resultado incerto antes de qualquer retry.
-9. **Revisão e entrega.** Verifique arquivos originais, continuidade, qualidade técnica, áudio, legendas e montagem. Só declare vídeo entregue após existência de arquivo, hashes, QC e aprovação. A v0.4 ainda NÃO automatiza a montagem final.
+9. **Revisão e entrega.** Verifique arquivos originais, continuidade, qualidade técnica, áudio, legendas e montagem. Só declare vídeo entregue após existência de arquivo, hashes, QC e aprovação. A v0.5 ainda NÃO automatiza a montagem final.
 
 ## Formato obrigatório para cada atualização
 
@@ -53,3 +53,4 @@ Exemplo: "Etapa 3/10 — Bíblia visual. Personagens e locais identificados e vi
 - [Plano de entrega](../../docs/FINALIZATION_PLAN.md)
 - [Aceite e evidências](../../docs/ACCEPTANCE_MATRIX.md)
 - [Contrato de desenvolvimento](../../AGENTS.md)
+- [Fases e avisos persistentes](../../docs/STAGE_ENGINE.md)

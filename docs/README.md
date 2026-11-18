@@ -11,3 +11,5 @@ Para usuários comece pelo [README principal](../README.md). Para agentes de dir
 Documentos atuais de engenharia (v0.4): [ARCHITECTURE.md](ARCHITECTURE.md), [ADAPTER_CONTRACT.md](ADAPTER_CONTRACT.md), [FLOW_WORKFLOWS.md](FLOW_WORKFLOWS.md), [SECURITY.md](SECURITY.md), [IMPLEMENTATION_GAPS.md](IMPLEMENTATION_GAPS.md), [REFERENCES.md](REFERENCES.md), [ROADMAP.md](ROADMAP.md), [BACKLOG.md](BACKLOG.md).
 
 **Fonte de verdade para priorização nova:** `FINALIZATION_PLAN.md`. `ROADMAP.md`, `BACKLOG.md` e `IMPLEMENTATION_GAPS.md` registram o histórico técnico e não devem prevalecer sobre os gates mais recentes. Atualizar estes documentos ou arquivá-los em PR posterior para não manter roadmaps divergentes.
+
+- [StageEngine — fases, eventos e decisões (v0.5)](STAGE_ENGINE.md)
